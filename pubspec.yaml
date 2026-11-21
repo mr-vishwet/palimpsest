@@ -1,5 +1,5 @@
 name: palimpsest
-description: PALIMPSEST — your life, as an editable memory. A local-first life archive: ask a question about an old memory and watch it reconstruct the moment.
+description: "PALIMPSEST — your life, as an editable memory. A local-first life archive: ask a question about an old memory and watch it reconstruct the moment."
 publish_to: 'none'
 version: 0.1.0+1
 
