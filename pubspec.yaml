@@ -1,0 +1,36 @@
+name: palimpsest
+description: PALIMPSEST — your life, as an editable memory. A local-first life archive: ask a question about an old memory and watch it reconstruct the moment.
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: '>=3.6.0 <4.0.0'
+  flutter: '>=3.27.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Space Grotesk display/body + JetBrains Mono for metadata.
+  google_fonts: ^6.2.1
+  # The four logo versions are bundled as SVG assets.
+  flutter_svg: ^2.0.17
+  # Local-first persistence: the whole archive (stories, memories, layers,
+  # people, places, voice notes, links, settings, account) is one versioned
+  # JSON document in shared_preferences in v0.1. A Drift/SQLite store behind
+  # the same ArchiveStore interface is a phase-2 item.
+  shared_preferences: ^2.3.4
+  # SHA-256 checksums for the provenance contract: every memory links to a
+  # source id + checksum, and exports are deterministic.
+  crypto: ^3.0.6
+  # firstOrNull and other collection helpers used across the codebase.
+  collection: ^1.18.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/logos/
