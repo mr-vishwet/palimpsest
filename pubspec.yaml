@@ -5,13 +5,16 @@ version: 0.1.0+1
 
 environment:
   sdk: '>=3.6.0 <4.0.0'
-  flutter: '>=3.27.0'
+  flutter: '>=3.47.0'
 
 dependencies:
   flutter:
     sdk: flutter
+  # Material Design widgets (package:flutter/material.dart was deprecated in
+  # Flutter 3.47; the library moved to the material_ui package).
+  material_ui: ^1.11.1
   # Space Grotesk display/body + JetBrains Mono for metadata.
-  google_fonts: ^6.2.1
+  google_fonts: ^9.0.0
   # The four logo versions are bundled as SVG assets.
   flutter_svg: ^2.0.17
   # Local-first persistence: the whole archive (stories, memories, layers,

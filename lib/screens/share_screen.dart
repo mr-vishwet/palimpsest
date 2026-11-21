@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../core/format.dart';
 import '../core/routes.dart';
@@ -46,15 +46,15 @@ class _ShareScreenState extends State<ShareScreen> {
       builder: (context, _) {
         final story = archive.storyById(widget.storyId);
         if (story == null) {
-          return ResponsiveScaffold(
+          return const ResponsiveScaffold(
             title: 'Share',
             tabIndex: 0,
-            mobile: const EmptyState(
+            mobile: EmptyState(
               icon: Icons.share_outlined,
               title: 'Story not found',
               body: 'This story is no longer in the archive.',
             ),
-            wide: const EmptyState(
+            wide: EmptyState(
               icon: Icons.share_outlined,
               title: 'Story not found',
               body: 'This story is no longer in the archive.',

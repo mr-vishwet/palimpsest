@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../core/constants.dart';
 import '../core/format.dart';
@@ -21,8 +21,8 @@ class OfflineScreen extends StatelessWidget {
       builder: (context, _) {
         final settings = archive.settings;
         final account = archive.account;
-        final used = AppConstants.storageUsedGb;
-        final total = AppConstants.storageTotalGb;
+        const used = AppConstants.storageUsedGb;
+        const total = AppConstants.storageTotalGb;
 
         final body = SingleChildScrollView(
           padding: const EdgeInsets.all(20),

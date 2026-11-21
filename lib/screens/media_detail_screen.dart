@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../core/format.dart';
 import '../core/routes.dart';
@@ -82,15 +82,15 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
       builder: (context, _) {
         final item = archive.itemById(widget.itemId);
         if (item == null) {
-          return ResponsiveScaffold(
+          return const ResponsiveScaffold(
             title: 'Media',
             tabIndex: 2,
-            mobile: const EmptyState(
+            mobile: EmptyState(
               icon: Icons.photo_outlined,
               title: 'Frame not found',
               body: 'This frame is no longer in the archive.',
             ),
-            wide: const EmptyState(
+            wide: EmptyState(
               icon: Icons.photo_outlined,
               title: 'Frame not found',
               body: 'This frame is no longer in the archive.',

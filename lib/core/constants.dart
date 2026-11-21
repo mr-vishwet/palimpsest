@@ -7,12 +7,26 @@
 abstract final class AppConstants {
   /// Demo archive headline totals (the seeded library's story).
   static const int totalPhotos = 5012;
+
+  /// Videos in the demo archive.
   static const int totalVideos = 143;
+
+  /// Voice notes in the demo archive.
   static const int totalVoiceNotes = 9;
+
+  /// Stories in the demo archive.
   static const int totalStories = 4;
+
+  /// Storage used by the demo archive, in GB.
   static const double storageUsedGb = 18.4;
+
+  /// Total device storage, in GB.
   static const double storageTotalGb = 128;
+
+  /// Storage used by thumbnails and the search index, in GB.
   static const double thumbnailsAndIndexGb = 1.2;
+
+  /// Bytes uploaded to any server — always zero; the archive is local-first.
   static const int uploadedBytes = 0;
 
   /// The canonical ask — the hero question from the V7 spec.
@@ -49,10 +63,14 @@ abstract final class AppConstants {
   /// Verification codes are simulated locally in v0.1 (no backend):
   /// any 6-digit code verifies. The demo code from the spec is 428195.
   static const String demoVerifyCode = '428195';
+
+  /// How long a verification code stays valid, in minutes.
   static const int verifyCodeValidityMinutes = 10;
 
   /// Import batch size for the demo import queue.
   static const int importBatchSize = 1204;
+
+  /// Items already indexed in the seeded import queue.
   static const int importSeededIndexed = 842;
 
   /// Breakpoint: at or above this width a screen uses its wide (web)

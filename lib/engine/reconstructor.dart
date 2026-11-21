@@ -102,9 +102,12 @@ abstract final class Reconstructor {
     List<MemoryItem> items,
   ) {
     final byId = {for (final item in items) item.id: item};
+    // Anchors are genuine finds: items the moment flagged as looking
+    // wrong (strays from another weekend) never anchor it.
     final ordered = moment.itemIds
         .map((id) => byId[id])
         .whereType<MemoryItem>()
+        .where((item) => !moment.flaggedIds.contains(item.id))
         .toList(growable: false);
     final anchors = <AnchorFind>[];
 
@@ -117,9 +120,11 @@ abstract final class Reconstructor {
         if (item.kind != kind) {
           continue;
         }
-        earliest ??= item;
         if (titled != null && item.title == titled) {
           return item;
+        }
+        if (earliest == null || item.takenAt.isBefore(earliest.takenAt)) {
+          earliest = item;
         }
       }
       return earliest;

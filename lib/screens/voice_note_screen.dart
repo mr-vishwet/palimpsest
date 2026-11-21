@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../core/format.dart';
 import '../core/routes.dart';
@@ -72,15 +72,15 @@ class _VoiceNoteScreenState extends State<VoiceNoteScreen> {
       builder: (context, _) {
         final note = archive.voiceNoteById(widget.noteId);
         if (note == null) {
-          return ResponsiveScaffold(
+          return const ResponsiveScaffold(
             title: 'Voice note',
             tabIndex: 2,
-            mobile: const EmptyState(
+            mobile: EmptyState(
               icon: Icons.mic_outlined,
               title: 'Voice note not found',
               body: 'This note is no longer in the archive.',
             ),
-            wide: const EmptyState(
+            wide: EmptyState(
               icon: Icons.mic_outlined,
               title: 'Voice note not found',
               body: 'This note is no longer in the archive.',
@@ -176,7 +176,7 @@ class _VoiceNoteScreenState extends State<VoiceNoteScreen> {
               Text('Attach to', style: AppTheme.kicker()),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                value: note.storyId,
+                initialValue: note.storyId,
                 hint: const Text('No story attached'),
                 items: <DropdownMenuItem<String>>[
                   const DropdownMenuItem<String>(

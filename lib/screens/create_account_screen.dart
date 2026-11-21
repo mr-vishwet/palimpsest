@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../core/routes.dart';
 import '../core/theme.dart';
@@ -73,9 +73,9 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 20),
-          GlassCard(
+          const GlassCard(
             child: Column(
-              children: const <Widget>[
+              children: <Widget>[
                 _BenefitRow(
                   icon: Icons.link_outlined,
                   text: 'Share links that live somewhere',

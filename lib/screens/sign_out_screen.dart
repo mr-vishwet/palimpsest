@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../core/routes.dart';
 import '../core/theme.dart';
@@ -57,12 +57,12 @@ class SignOutScreen extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
-          GlassCard(
+          const GlassCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Row(
-                  children: const <Widget>[
+                  children: <Widget>[
                     Icon(Icons.check_circle, color: V7Colors.green, size: 20),
                     SizedBox(width: 10),
                     Expanded(
@@ -72,9 +72,9 @@ class SignOutScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 Row(
-                  children: const <Widget>[
+                  children: <Widget>[
                     Icon(Icons.cloud_off_outlined,
                         color: V7Colors.amber, size: 20),
                     SizedBox(width: 10),

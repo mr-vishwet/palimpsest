@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../core/routes.dart';
 import '../core/theme.dart';
@@ -64,17 +64,17 @@ class MomentScreen extends StatelessWidget {
       builder: (context, _) {
         final moment = archive.momentById(momentId);
         if (moment == null) {
-          return ResponsiveScaffold(
+          return const ResponsiveScaffold(
             title: 'Moment',
             tabIndex: 1,
-            mobile: const EmptyState(
+            mobile: EmptyState(
               icon: Icons.search_off_outlined,
               title: 'Moment not found',
               body: 'Ask a question and the archive will rebuild it.',
               actionLabel: 'Ask the archive',
               onAction: null,
             ),
-            wide: const EmptyState(
+            wide: EmptyState(
               icon: Icons.search_off_outlined,
               title: 'Moment not found',
               body: 'Ask a question and the archive will rebuild it.',

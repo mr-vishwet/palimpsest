@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../core/format.dart';
 import '../core/routes.dart';
@@ -128,15 +128,15 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
       builder: (context, _) {
         final story = archive.storyById(widget.storyId);
         if (story == null) {
-          return ResponsiveScaffold(
+          return const ResponsiveScaffold(
             title: 'Story',
             tabIndex: 0,
-            mobile: const EmptyState(
+            mobile: EmptyState(
               icon: Icons.book_outlined,
               title: 'Story not found',
               body: 'This story is no longer in the archive.',
             ),
-            wide: const EmptyState(
+            wide: EmptyState(
               icon: Icons.book_outlined,
               title: 'Story not found',
               body: 'This story is no longer in the archive.',

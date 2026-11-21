@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../core/format.dart';
 import '../core/routes.dart';
@@ -26,15 +26,15 @@ class ComposeScreen extends StatelessWidget {
       builder: (context, _) {
         final story = archive.storyById(storyId);
         if (story == null) {
-          return ResponsiveScaffold(
+          return const ResponsiveScaffold(
             title: 'Compose',
             tabIndex: 0,
-            mobile: const EmptyState(
+            mobile: EmptyState(
               icon: Icons.book_outlined,
               title: 'Story not found',
               body: 'This story is no longer in the archive.',
             ),
-            wide: const EmptyState(
+            wide: EmptyState(
               icon: Icons.book_outlined,
               title: 'Story not found',
               body: 'This story is no longer in the archive.',
@@ -72,11 +72,8 @@ class ComposeScreen extends StatelessWidget {
               child: ReorderableListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 itemCount: chapters.length,
-                onReorder: (oldIndex, newIndex) {
+                onReorderItem: (oldIndex, newIndex) {
                   final next = List<Chapter>.of(chapters);
-                  if (newIndex > oldIndex) {
-                    newIndex -= 1;
-                  }
                   final moved = next.removeAt(oldIndex);
                   next.insert(newIndex, moved);
                   archive.reorderChapters(story.id, next);

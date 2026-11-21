@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// The V7 colours as direct `static const` values.
 ///
@@ -12,23 +12,58 @@ import 'package:google_fonts/google_fonts.dart';
 class V7Colors {
   V7Colors._();
 
+  /// Near-black space background.
   static const Color bg0 = Color(0xFF111110);
+
+  /// Warm charcoal background.
   static const Color bg1 = Color(0xFF161513);
+
+  /// Warm charcoal background, lighter.
   static const Color bg2 = Color(0xFF1C1917);
+
+  /// Primary text on dark backgrounds.
   static const Color ink = Color(0xFFFFFFFF);
+
+  /// Secondary parchment text.
   static const Color parchment = Color(0xFFE7DDC8);
+
+  /// Muted secondary text.
   static const Color muted = Color(0xFFA8A29E);
+
+  /// Translucent glass surface.
   static const Color glass = Color(0x14FFFFFF);
+
+  /// Translucent glass surface, stronger.
   static const Color glassStrong = Color(0x21FFFFFF);
+
+  /// Hairline border on dark surfaces.
   static const Color hairline = Color(0x26FFFFFF);
+
+  /// Gold accent — primary CTAs and highlights.
   static const Color gold = Color(0xFFD4A853);
+
+  /// Amber accent — gradient CTAs and warnings.
   static const Color amber = Color(0xFFF59E0B);
+
+  /// Pale dawn gold — selected states.
   static const Color dawn = Color(0xFFFDE68A);
+
+  /// Green — success and on-device states.
   static const Color green = Color(0xFF34D399);
+
+  /// Pink accent.
   static const Color pink = Color(0xFFF472B6);
+
+  /// Cyan accent — film-night highlights.
   static const Color cyan = Color(0xFF67E8F9);
+
+  /// Blue accent.
   static const Color blue = Color(0xFF60A5FA);
+
+  /// Danger red — destructive actions.
   static const Color danger = Color(0xFFF87171);
+
+  /// Text on gold surfaces.
   static const Color onGold = Color(0xFF221C15);
 }
 
@@ -39,6 +74,7 @@ class V7Colors {
 /// palette and a ThemeMode switch without touching any screen. Phase 1
 /// ships the single V7 theme as [AppTheme.current].
 class Palette {
+  /// Creates a palette from its colours.
   const Palette({
     required this.bg0,
     required this.bg1,
@@ -83,23 +119,58 @@ class Palette {
     onGold: V7Colors.onGold,
   );
 
+  /// Near-black space background.
   final Color bg0;
+
+  /// Warm charcoal background.
   final Color bg1;
+
+  /// Warm charcoal background, lighter.
   final Color bg2;
+
+  /// Primary text on dark backgrounds.
   final Color ink;
+
+  /// Secondary parchment text.
   final Color parchment;
+
+  /// Muted secondary text.
   final Color muted;
+
+  /// Translucent glass surface.
   final Color glass;
+
+  /// Translucent glass surface, stronger.
   final Color glassStrong;
+
+  /// Hairline border on dark surfaces.
   final Color hairline;
+
+  /// Gold accent — primary CTAs and highlights.
   final Color gold;
+
+  /// Amber accent — gradient CTAs and warnings.
   final Color amber;
+
+  /// Pale dawn gold — selected states.
   final Color dawn;
+
+  /// Green — success and on-device states.
   final Color green;
+
+  /// Pink accent.
   final Color pink;
+
+  /// Cyan accent — film-night highlights.
   final Color cyan;
+
+  /// Blue accent.
   final Color blue;
+
+  /// Danger red — destructive actions.
   final Color danger;
+
+  /// Text on gold surfaces.
   final Color onGold;
 
   /// The gold → amber gradient used for primary CTAs and the memory orb.

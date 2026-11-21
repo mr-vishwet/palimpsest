@@ -1,5 +1,5 @@
 import 'package:collection/collection.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../core/format.dart';
 import '../core/theme.dart';
@@ -73,15 +73,15 @@ class _ChapterEditScreenState extends State<ChapterEditScreen> {
             .where((c) => c.id == widget.chapterId)
             .firstOrNull;
         if (story == null || chapter == null) {
-          return ResponsiveScaffold(
+          return const ResponsiveScaffold(
             title: 'Chapter',
             tabIndex: 0,
-            mobile: const EmptyState(
+            mobile: EmptyState(
               icon: Icons.book_outlined,
               title: 'Chapter not found',
               body: 'This chapter is no longer in the archive.',
             ),
-            wide: const EmptyState(
+            wide: EmptyState(
               icon: Icons.book_outlined,
               title: 'Chapter not found',
               body: 'This chapter is no longer in the archive.',
