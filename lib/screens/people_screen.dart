@@ -193,7 +193,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                       if (selectedItems.isEmpty)
                         const Text(
                           'No frames with this person in the demo subset.',
-                          style: TextStyle(color: Palette.v7.muted),
+                          style: TextStyle(color: V7Colors.muted),
                         )
                       else
                         GridView.builder(

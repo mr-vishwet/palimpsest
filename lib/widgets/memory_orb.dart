@@ -150,7 +150,7 @@ class ProgressRing extends StatelessWidget {
               value: progress,
               strokeWidth: 8,
               backgroundColor: palette.glassStrong,
-              valueColor: const AlwaysStoppedAnimation<Color>(Palette.v7.gold),
+              valueColor: const AlwaysStoppedAnimation<Color>(V7Colors.gold),
             ),
           ),
           Column(

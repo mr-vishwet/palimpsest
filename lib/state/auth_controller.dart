@@ -84,7 +84,7 @@ class AuthController extends ChangeNotifier {
     var tick = 0;
     _migrationTimer = Timer.periodic(const Duration(milliseconds: 150), (timer) {
       tick++;
-      migrationProgress = (tick / 28).clamp(0, 1);
+      migrationProgress = (tick / 28).clamp(0, 1).toDouble();
       if (tick >= 28) {
         timer.cancel();
         _finishMigration();

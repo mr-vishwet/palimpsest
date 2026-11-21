@@ -596,7 +596,7 @@ class ArchiveController extends ChangeNotifier {
     if (state.status != ImportStatus.indexing) {
       return;
     }
-    final indexed = (state.indexed + count).clamp(0, state.total);
+    final indexed = (state.indexed + count).clamp(0, state.total).toInt();
     _update(
       _data.copyWith(
         importState: state.copyWith(

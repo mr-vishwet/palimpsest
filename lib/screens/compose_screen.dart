@@ -91,7 +91,7 @@ class ComposeScreen extends StatelessWidget {
                         children: <Widget>[
                           const Icon(
                             Icons.drag_handle,
-                            color: Palette.v7.muted,
+                            color: V7Colors.muted,
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -127,7 +127,7 @@ class ComposeScreen extends StatelessWidget {
                           ),
                           const Icon(
                             Icons.chevron_right,
-                            color: Palette.v7.muted,
+                            color: V7Colors.muted,
                           ),
                         ],
                       ),

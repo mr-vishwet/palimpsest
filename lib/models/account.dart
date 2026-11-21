@@ -89,7 +89,7 @@ class AccountState {
 
   /// Backup progress 0–1 (1 when nothing to back up).
   double get backupProgress =>
-      backupTotalGb <= 0 ? 1 : (backupUploadedGb / backupTotalGb).clamp(0, 1);
+      backupTotalGb <= 0 ? 1.0 : (backupUploadedGb / backupTotalGb).clamp(0, 1).toDouble();
 
   /// Serializes the account state for local storage.
   Map<String, Object?> toJson() => <String, Object?>{

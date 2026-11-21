@@ -38,7 +38,7 @@ class SignOutScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           const SizedBox(height: 24),
-          const Icon(Icons.logout, size: 48, color: Palette.v7.gold),
+          const Icon(Icons.logout, size: 48, color: V7Colors.gold),
           const SizedBox(height: 16),
           Text(
             'Sign out?',
@@ -63,7 +63,7 @@ class SignOutScreen extends StatelessWidget {
               children: <Widget>[
                 Row(
                   children: const <Widget>[
-                    Icon(Icons.check_circle, color: Palette.v7.green, size: 20),
+                    Icon(Icons.check_circle, color: V7Colors.green, size: 20),
                     SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -76,7 +76,7 @@ class SignOutScreen extends StatelessWidget {
                 Row(
                   children: const <Widget>[
                     Icon(Icons.cloud_off_outlined,
-                        color: Palette.v7.amber, size: 20),
+                        color: V7Colors.amber, size: 20),
                     SizedBox(width: 10),
                     Expanded(
                       child: Text(

@@ -37,7 +37,7 @@ class Waveform extends StatelessWidget {
           : (details) {
               final box = context.findRenderObject()! as RenderBox;
               final local = box.globalToLocal(details.globalPosition);
-              final next = (local.dx / box.size.width).clamp(0, 1);
+              final next = (local.dx / box.size.width).clamp(0, 1).toDouble();
               onSeek!(next);
             },
       child: SizedBox(
@@ -50,7 +50,7 @@ class Waveform extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 1),
                   child: Container(
-                    height: (heights[i] * height).clamp(4, height),
+                    height: (heights[i] * height).clamp(4, height).toDouble(),
                     decoration: BoxDecoration(
                       color: i / heights.length <= progress
                           ? palette.gold

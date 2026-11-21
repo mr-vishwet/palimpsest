@@ -68,7 +68,7 @@ class AskScreen extends StatelessWidget {
                           const Icon(
                             Icons.search,
                             size: 18,
-                            color: Palette.v7.parchment,
+                            color: V7Colors.parchment,
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -88,7 +88,7 @@ class AskScreen extends StatelessWidget {
                           ),
                           const Icon(
                             Icons.chevron_right,
-                            color: Palette.v7.muted,
+                            color: V7Colors.muted,
                           ),
                         ],
                       ),
@@ -158,7 +158,7 @@ class AskScreen extends StatelessWidget {
                                 const Icon(
                                   Icons.search,
                                   size: 18,
-                                  color: Palette.v7.parchment,
+                                  color: V7Colors.parchment,
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
@@ -181,7 +181,7 @@ class AskScreen extends StatelessWidget {
                                 ),
                                 const Icon(
                                   Icons.chevron_right,
-                                  color: Palette.v7.muted,
+                                  color: V7Colors.muted,
                                 ),
                               ],
                             ),

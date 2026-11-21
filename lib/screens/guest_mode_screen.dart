@@ -70,7 +70,7 @@ class GuestModeScreen extends StatelessWidget {
                         const Icon(
                           Icons.check_circle,
                           size: 18,
-                          color: Palette.v7.green,
+                          color: V7Colors.green,
                         ),
                         const SizedBox(width: 10),
                         Expanded(child: Text(item)),
@@ -89,7 +89,7 @@ class GuestModeScreen extends StatelessWidget {
               child: GlassCard(
                 child: Row(
                   children: <Widget>[
-                    const Icon(Icons.lock_outline, color: Palette.v7.gold),
+                    const Icon(Icons.lock_outline, color: V7Colors.gold),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(

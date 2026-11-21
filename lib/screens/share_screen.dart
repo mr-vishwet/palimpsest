@@ -174,7 +174,7 @@ class _ShareScreenState extends State<ShareScreen> {
               if (links.isEmpty)
                 const Text(
                   'No links yet. Create one above.',
-                  style: TextStyle(color: Palette.v7.muted),
+                  style: TextStyle(color: V7Colors.muted),
                 )
               else
                 for (final link in links)

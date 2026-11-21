@@ -73,12 +73,12 @@ class AccountHomeScreen extends StatelessWidget {
                       Navigator.of(context).pushNamed(Routes.guestMode),
                   child: const Row(
                     children: <Widget>[
-                      Icon(Icons.info_outline, color: Palette.v7.gold),
+                      Icon(Icons.info_outline, color: V7Colors.gold),
                       SizedBox(width: 12),
                       Expanded(
                         child: Text('What works as a guest?'),
                       ),
-                      Icon(Icons.chevron_right, color: Palette.v7.muted),
+                      Icon(Icons.chevron_right, color: V7Colors.muted),
                     ],
                   ),
                 ),
@@ -121,7 +121,7 @@ class AccountHomeScreen extends StatelessWidget {
                 if (links.isEmpty)
                   const Text(
                     'No shared links yet — open a story and share it.',
-                    style: TextStyle(color: Palette.v7.muted),
+                    style: TextStyle(color: V7Colors.muted),
                   )
                 else
                   for (final link in links)
@@ -132,7 +132,7 @@ class AccountHomeScreen extends StatelessWidget {
                           children: <Widget>[
                             const Icon(
                               Icons.link_outlined,
-                              color: Palette.v7.gold,
+                              color: V7Colors.gold,
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -170,10 +170,10 @@ class AccountHomeScreen extends StatelessWidget {
                       Navigator.of(context).pushNamed(Routes.connected),
                   child: const Row(
                     children: <Widget>[
-                      Icon(Icons.link_outlined, color: Palette.v7.gold),
+                      Icon(Icons.link_outlined, color: V7Colors.gold),
                       SizedBox(width: 12),
                       Expanded(child: Text('Connected accounts')),
-                      Icon(Icons.chevron_right, color: Palette.v7.muted),
+                      Icon(Icons.chevron_right, color: V7Colors.muted),
                     ],
                   ),
                 ),
@@ -183,10 +183,10 @@ class AccountHomeScreen extends StatelessWidget {
                       Navigator.of(context).pushNamed(Routes.signOut),
                   child: const Row(
                     children: <Widget>[
-                      Icon(Icons.logout, color: Palette.v7.danger),
+                      Icon(Icons.logout, color: V7Colors.danger),
                       SizedBox(width: 12),
                       Expanded(child: Text('Sign out')),
-                      Icon(Icons.chevron_right, color: Palette.v7.muted),
+                      Icon(Icons.chevron_right, color: V7Colors.muted),
                     ],
                   ),
                 ),
@@ -197,10 +197,10 @@ class AccountHomeScreen extends StatelessWidget {
                     Navigator.of(context).pushNamed(Routes.settings),
                 child: const Row(
                   children: <Widget>[
-                    Icon(Icons.settings_outlined, color: Palette.v7.gold),
+                    Icon(Icons.settings_outlined, color: V7Colors.gold),
                     SizedBox(width: 12),
                     Expanded(child: Text('Settings')),
-                    Icon(Icons.chevron_right, color: Palette.v7.muted),
+                    Icon(Icons.chevron_right, color: V7Colors.muted),
                   ],
                 ),
               ),
@@ -210,10 +210,10 @@ class AccountHomeScreen extends StatelessWidget {
                     Navigator.of(context).pushNamed(Routes.offline),
                 child: const Row(
                   children: <Widget>[
-                    Icon(Icons.wifi_off_outlined, color: Palette.v7.gold),
+                    Icon(Icons.wifi_off_outlined, color: V7Colors.gold),
                     SizedBox(width: 12),
                     Expanded(child: Text('Offline & storage')),
-                    Icon(Icons.chevron_right, color: Palette.v7.muted),
+                    Icon(Icons.chevron_right, color: V7Colors.muted),
                   ],
                 ),
               ),

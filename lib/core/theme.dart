@@ -1,6 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+/// The V7 colours as direct `static const` values.
+///
+/// Field access on the const [Palette.v7] object (`Palette.v7.gold`)
+/// is not accepted as a constant expression in `const` constructor
+/// calls, so every `const` context uses these instead (e.g.
+/// `V7Colors.gold`). [Palette.v7] is built from the same values, so
+/// the two spellings are identical at runtime; non-`const` code
+/// keeps using `Palette.v7.*` / `palette.*`.
+class V7Colors {
+  V7Colors._();
+
+  static const Color bg0 = Color(0xFF111110);
+  static const Color bg1 = Color(0xFF161513);
+  static const Color bg2 = Color(0xFF1C1917);
+  static const Color ink = Color(0xFFFFFFFF);
+  static const Color parchment = Color(0xFFE7DDC8);
+  static const Color muted = Color(0xFFA8A29E);
+  static const Color glass = Color(0x14FFFFFF);
+  static const Color glassStrong = Color(0x21FFFFFF);
+  static const Color hairline = Color(0x26FFFFFF);
+  static const Color gold = Color(0xFFD4A853);
+  static const Color amber = Color(0xFFF59E0B);
+  static const Color dawn = Color(0xFFFDE68A);
+  static const Color green = Color(0xFF34D399);
+  static const Color pink = Color(0xFFF472B6);
+  static const Color cyan = Color(0xFF67E8F9);
+  static const Color blue = Color(0xFF60A5FA);
+  static const Color danger = Color(0xFFF87171);
+  static const Color onGold = Color(0xFF221C15);
+}
+
 /// The V7 animated-essence palette: warm charcoal space, parchment
 /// secondary text, gold → amber gradient CTAs, film-night cyan accents.
 ///
@@ -30,25 +61,26 @@ class Palette {
   });
 
   /// The V7 palette — near-black #111110 → warm charcoal #1C1917.
+  /// Built from [V7Colors] so the two spellings stay identical.
   static const Palette v7 = Palette(
-    bg0: Color(0xFF111110),
-    bg1: Color(0xFF161513),
-    bg2: Color(0xFF1C1917),
-    ink: Color(0xFFFFFFFF),
-    parchment: Color(0xFFE7DDC8),
-    muted: Color(0xFFA8A29E),
-    glass: Color(0x14FFFFFF),
-    glassStrong: Color(0x21FFFFFF),
-    hairline: Color(0x26FFFFFF),
-    gold: Color(0xFFD4A853),
-    amber: Color(0xFFF59E0B),
-    dawn: Color(0xFFFDE68A),
-    green: Color(0xFF34D399),
-    pink: Color(0xFFF472B6),
-    cyan: Color(0xFF67E8F9),
-    blue: Color(0xFF60A5FA),
-    danger: Color(0xFFF87171),
-    onGold: Color(0xFF221C15),
+    bg0: V7Colors.bg0,
+    bg1: V7Colors.bg1,
+    bg2: V7Colors.bg2,
+    ink: V7Colors.ink,
+    parchment: V7Colors.parchment,
+    muted: V7Colors.muted,
+    glass: V7Colors.glass,
+    glassStrong: V7Colors.glassStrong,
+    hairline: V7Colors.hairline,
+    gold: V7Colors.gold,
+    amber: V7Colors.amber,
+    dawn: V7Colors.dawn,
+    green: V7Colors.green,
+    pink: V7Colors.pink,
+    cyan: V7Colors.cyan,
+    blue: V7Colors.blue,
+    danger: V7Colors.danger,
+    onGold: V7Colors.onGold,
   );
 
   final Color bg0;
@@ -104,17 +136,17 @@ class AppTheme {
       useMaterial3: true,
       brightness: Brightness.dark,
       colorScheme: const ColorScheme.dark(
-        primary: Palette.v7.gold,
-        onPrimary: Palette.v7.onGold,
-        secondary: Palette.v7.amber,
-        surface: Palette.v7.bg1,
-        onSurface: Palette.v7.ink,
-        error: Palette.v7.danger,
+        primary: V7Colors.gold,
+        onPrimary: V7Colors.onGold,
+        secondary: V7Colors.amber,
+        surface: V7Colors.bg1,
+        onSurface: V7Colors.ink,
+        error: V7Colors.danger,
       ),
       scaffoldBackgroundColor: p.bg0,
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
-        foregroundColor: Palette.v7.ink,
+        foregroundColor: V7Colors.ink,
         elevation: 0,
         scrolledUnderElevation: 0,
       ),
@@ -123,7 +155,7 @@ class AppTheme {
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: Palette.v7.hairline),
+          side: const BorderSide(color: V7Colors.hairline),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
@@ -139,7 +171,7 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: p.parchment,
-          side: const BorderSide(color: Palette.v7.hairline),
+          side: const BorderSide(color: V7Colors.hairline),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
@@ -163,15 +195,15 @@ class AppTheme {
         fillColor: p.glass,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Palette.v7.hairline),
+          borderSide: const BorderSide(color: V7Colors.hairline),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Palette.v7.hairline),
+          borderSide: const BorderSide(color: V7Colors.hairline),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Palette.v7.gold, width: 1.5),
+          borderSide: const BorderSide(color: V7Colors.gold, width: 1.5),
         ),
         hintStyle: TextStyle(color: p.muted),
       ),

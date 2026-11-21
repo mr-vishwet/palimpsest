@@ -75,9 +75,9 @@ class AskController extends ChangeNotifier {
     var tick = 0;
     _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
       tick++;
-      progress = (tick / 16).clamp(0, 1);
-      gathered = (total * progress).round().clamp(0, total);
-      final anchorsToShow = (progress * _anchors.length).ceil().clamp(0, _anchors.length);
+      progress = (tick / 16).clamp(0, 1).toDouble();
+      gathered = (total * progress).round().clamp(0, total).toInt();
+      final anchorsToShow = (progress * _anchors.length).ceil().clamp(0, _anchors.length).toInt();
       revealedAnchors = _anchors.sublist(0, anchorsToShow);
       if (tick >= 16) {
         timer.cancel();

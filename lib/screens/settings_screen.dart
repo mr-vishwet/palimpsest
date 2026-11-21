@@ -155,7 +155,7 @@ class SettingsScreen extends StatelessWidget {
                     Navigator.of(context).pushNamed(Routes.account),
                 child: Row(
                   children: <Widget>[
-                    const Icon(Icons.person_outline, color: Palette.v7.gold),
+                    const Icon(Icons.person_outline, color: V7Colors.gold),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -176,7 +176,7 @@ class SettingsScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const Icon(Icons.chevron_right, color: Palette.v7.muted),
+                    const Icon(Icons.chevron_right, color: V7Colors.muted),
                   ],
                 ),
               ),

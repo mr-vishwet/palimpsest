@@ -125,7 +125,7 @@ class TimelineScreen extends StatelessWidget {
                   children: <Widget>[
                     const Icon(
                       Icons.photo_library_outlined,
-                      color: Palette.v7.gold,
+                      color: V7Colors.gold,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -148,7 +148,7 @@ class TimelineScreen extends StatelessWidget {
                     ),
                     const Icon(
                       Icons.chevron_right,
-                      color: Palette.v7.muted,
+                      color: V7Colors.muted,
                     ),
                   ],
                 ),

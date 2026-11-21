@@ -137,7 +137,7 @@ class MomentScreen extends StatelessWidget {
                   borderColor: Palette.v7.amber.withValues(alpha: 0.6),
                   child: Row(
                     children: <Widget>[
-                      const Icon(Icons.flag_outlined, color: Palette.v7.amber),
+                      const Icon(Icons.flag_outlined, color: V7Colors.amber),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(

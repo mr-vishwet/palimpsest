@@ -125,12 +125,12 @@ class _SignInScreenState extends State<SignInScreen> {
           const SizedBox(height: 16),
           Row(
             children: <Widget>[
-              const Expanded(child: Divider(color: Palette.v7.hairline)),
+              const Expanded(child: Divider(color: V7Colors.hairline)),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Text('or', style: AppTheme.mono(size: 12)),
               ),
-              const Expanded(child: Divider(color: Palette.v7.hairline)),
+              const Expanded(child: Divider(color: V7Colors.hairline)),
             ],
           ),
           const SizedBox(height: 16),

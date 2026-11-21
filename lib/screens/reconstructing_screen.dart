@@ -152,7 +152,7 @@ class _ReconstructingScreenState extends State<ReconstructingScreen> {
                               const Icon(
                                 Icons.check_circle,
                                 size: 18,
-                                color: Palette.v7.green,
+                                color: V7Colors.green,
                               ),
                               const SizedBox(width: 8),
                               Expanded(child: Text(anchor.label)),
@@ -166,7 +166,7 @@ class _ReconstructingScreenState extends State<ReconstructingScreen> {
                           width: 8,
                           height: 8,
                           decoration: const BoxDecoration(
-                            color: Palette.v7.green,
+                            color: V7Colors.green,
                             shape: BoxShape.circle,
                           ),
                         ),

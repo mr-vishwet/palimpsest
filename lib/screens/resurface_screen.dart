@@ -56,7 +56,7 @@ class ResurfaceScreen extends StatelessWidget {
               if (items.isEmpty)
                 const Text(
                   'No frames from that day in the demo subset.',
-                  style: TextStyle(color: Palette.v7.muted),
+                  style: TextStyle(color: V7Colors.muted),
                 )
               else
                 GridView.builder(

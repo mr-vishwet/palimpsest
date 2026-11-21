@@ -211,7 +211,7 @@ class _VoiceNoteScreenState extends State<VoiceNoteScreen> {
                   ),
                   child: Row(
                     children: <Widget>[
-                      const Icon(Icons.photo_outlined, color: Palette.v7.gold),
+                      const Icon(Icons.photo_outlined, color: V7Colors.gold),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
@@ -231,7 +231,7 @@ class _VoiceNoteScreenState extends State<VoiceNoteScreen> {
                       ),
                       const Icon(
                         Icons.chevron_right,
-                        color: Palette.v7.muted,
+                        color: V7Colors.muted,
                       ),
                     ],
                   ),

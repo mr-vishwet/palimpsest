@@ -46,7 +46,7 @@ class LayerHistory extends StatelessWidget {
     if (layers.isEmpty) {
       return const Text(
         'No edits yet — the first layer is the original.',
-        style: TextStyle(color: Palette.v7.muted),
+        style: TextStyle(color: V7Colors.muted),
       );
     }
     return Column(

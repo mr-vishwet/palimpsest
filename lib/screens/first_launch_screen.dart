@@ -114,7 +114,7 @@ class _LaunchAction extends StatelessWidget {
               ],
             ),
           ),
-          const Icon(Icons.chevron_right, color: Palette.v7.muted),
+          const Icon(Icons.chevron_right, color: V7Colors.muted),
         ],
       ),
     );

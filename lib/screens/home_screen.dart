@@ -61,7 +61,7 @@ class _HomeBody extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               StatusPill(label: 'On-device'),
-              StatusPill(label: 'Demo library', dotColor: Palette.v7.amber),
+              StatusPill(label: 'Demo library', dotColor: V7Colors.amber),
             ],
           ),
           const SizedBox(height: 16),
@@ -93,7 +93,7 @@ class _HomeBody extends StatelessWidget {
             onTap: () => Navigator.of(context).pushNamed(Routes.resurface),
             child: Row(
               children: <Widget>[
-                const Icon(Icons.history, color: Palette.v7.gold),
+                const Icon(Icons.history, color: V7Colors.gold),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -111,7 +111,7 @@ class _HomeBody extends StatelessWidget {
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right, color: Palette.v7.muted),
+                const Icon(Icons.chevron_right, color: V7Colors.muted),
               ],
             ),
           ),

@@ -56,7 +56,7 @@ class ImportState {
   final String sourceLabel;
 
   /// Progress 0–1.
-  double get progress => total <= 0 ? 1 : (indexed / total).clamp(0, 1);
+  double get progress => total <= 0 ? 1.0 : (indexed / total).clamp(0, 1).toDouble();
 
   /// Items still waiting.
   int get remaining => total - indexed;

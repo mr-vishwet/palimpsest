@@ -145,7 +145,7 @@ class _ChapterEditScreenState extends State<ChapterEditScreen> {
               if (frames.isEmpty)
                 const Text(
                   'No frames in this chapter in the demo library yet.',
-                  style: TextStyle(color: Palette.v7.muted),
+                  style: TextStyle(color: V7Colors.muted),
                 )
               else
                 SizedBox(
@@ -172,7 +172,7 @@ class _ChapterEditScreenState extends State<ChapterEditScreen> {
                                     top: 6,
                                     child: Icon(
                                       Icons.check_circle,
-                                      color: Palette.v7.gold,
+                                      color: V7Colors.gold,
                                     ),
                                   ),
                               ],

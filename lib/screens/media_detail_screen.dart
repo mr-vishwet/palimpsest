@@ -133,7 +133,7 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
                   if (item.isCover)
                     const StatusPill(
                       label: 'Story cover',
-                      dotColor: Palette.v7.gold,
+                      dotColor: V7Colors.gold,
                     ),
                 ],
               ),
@@ -218,7 +218,7 @@ class _MediaDetailScreenState extends State<MediaDetailScreen> {
                         ),
                       ),
                       const Icon(Icons.edit_outlined,
-                          size: 18, color: Palette.v7.muted),
+                          size: 18, color: V7Colors.muted),
                     ],
                   ),
                 ),

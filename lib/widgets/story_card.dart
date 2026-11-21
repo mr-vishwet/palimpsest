@@ -112,7 +112,7 @@ class StoryCard extends StatelessWidget {
           ),
           const Padding(
             padding: EdgeInsets.only(right: 12),
-            child: Icon(Icons.chevron_right, color: Palette.v7.muted),
+            child: Icon(Icons.chevron_right, color: V7Colors.muted),
           ),
         ],
       ),

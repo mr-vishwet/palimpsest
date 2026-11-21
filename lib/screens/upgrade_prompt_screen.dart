@@ -25,7 +25,7 @@ class UpgradePromptScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           const SizedBox(height: 32),
-          const Icon(Icons.link_outlined, size: 56, color: Palette.v7.gold),
+          const Icon(Icons.link_outlined, size: 56, color: V7Colors.gold),
           const SizedBox(height: 20),
           Text(
             'Share this story?',

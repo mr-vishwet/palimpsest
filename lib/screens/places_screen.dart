@@ -73,7 +73,7 @@ class _PlacesScreenState extends State<PlacesScreen> {
                       children: <Widget>[
                         const Icon(
                           Icons.location_on_outlined,
-                          color: Palette.v7.gold,
+                          color: V7Colors.gold,
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -95,7 +95,7 @@ class _PlacesScreenState extends State<PlacesScreen> {
                         ),
                         const Icon(
                           Icons.chevron_right,
-                          color: Palette.v7.muted,
+                          color: V7Colors.muted,
                         ),
                       ],
                     ),
