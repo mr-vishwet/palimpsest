@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:crypto/crypto.dart';
 
 /// The kind of a single memory in the archive.
@@ -21,9 +19,9 @@ enum MediaKind {
 ///
 /// The provenance contract (catalog): every memory links to a source id
 /// and a checksum, so any search result or export can be traced back to
-/// the item it came from. In v0.1 the seeded demo library carries
-/// deterministic checksums computed from id + timestamp; real imports
-/// hash the file bytes (phase 2).
+/// the item it came from. Imported items hash the file bytes; the
+/// original bytes live in the blob store under [blobId] and the
+/// thumbnail under [thumbBlobId].
 class MemoryItem {
   /// Creates a memory item.
   const MemoryItem({
@@ -43,14 +41,18 @@ class MemoryItem {
     this.durationSeconds,
     this.note,
     this.isCover = false,
-    this.isDemo = true,
+    this.isDemo = false,
+    this.blobId,
+    this.thumbBlobId,
+    this.mimeType,
+    this.sourceName,
+    this.gpsLat,
+    this.gpsLng,
   });
 
-  /// Deterministic checksum for a seeded item: SHA-256 of id + timestamp.
-  static String checksumFor(String id, DateTime takenAt) {
-    final bytes = utf8.encode('$id|${takenAt.toIso8601String()}');
-    return sha256.convert(bytes).toString();
-  }
+  /// SHA-256 checksum of file bytes, for imported items.
+  static String checksumOfBytes(List<int> bytes) =>
+      sha256.convert(bytes).toString();
 
   /// Rebuilds an item from stored JSON.
   factory MemoryItem.fromJson(Map<String, Object?> json) => MemoryItem(
@@ -70,7 +72,13 @@ class MemoryItem {
         durationSeconds: json['durationSeconds'] as int?,
         note: json['note'] as String?,
         isCover: json['isCover'] as bool? ?? false,
-        isDemo: json['isDemo'] as bool? ?? true,
+        isDemo: json['isDemo'] as bool? ?? false,
+        blobId: json['blobId'] as String?,
+        thumbBlobId: json['thumbBlobId'] as String?,
+        mimeType: json['mimeType'] as String?,
+        sourceName: json['sourceName'] as String?,
+        gpsLat: (json['gpsLat'] as num?)?.toDouble(),
+        gpsLng: (json['gpsLng'] as num?)?.toDouble(),
       );
 
   /// Stable id, e.g. `frame-042`.
@@ -121,8 +129,56 @@ class MemoryItem {
   /// True when this item is the cover frame of its story or chapter.
   final bool isCover;
 
-  /// True for seeded demo-library content.
+  /// True for demo-media content (loaded from the bundled demo set).
+  /// Real imports and user-created content are false.
   final bool isDemo;
+
+  /// Key of the original file bytes in the blob store, if imported.
+  final String? blobId;
+
+  /// Key of the thumbnail bytes in the blob store, if one was made.
+  final String? thumbBlobId;
+
+  /// MIME type of the original file, e.g. `image/jpeg`.
+  final String? mimeType;
+
+  /// Original filename at import, e.g. `IMG_0421.jpg`.
+  final String? sourceName;
+
+  /// GPS latitude from EXIF, when the file carried one.
+  final double? gpsLat;
+
+  /// GPS longitude from EXIF, when the file carried one.
+  final double? gpsLng;
+
+  /// True when this item has real bytes behind it (an import).
+  bool get hasBytes => blobId != null;
+
+  /// Returns a copy detached from its story and chapter (used by the
+  /// v1 migration when the item's story was dropped as demo content).
+  MemoryItem withoutStory() => MemoryItem(
+        id: id,
+        kind: kind,
+        title: title,
+        takenAt: takenAt,
+        checksum: checksum,
+        tags: tags,
+        personIds: personIds,
+        placeId: placeId,
+        aspectRatio: aspectRatio,
+        widthPx: widthPx,
+        heightPx: heightPx,
+        durationSeconds: durationSeconds,
+        note: note,
+        isCover: false,
+        isDemo: isDemo,
+        blobId: blobId,
+        thumbBlobId: thumbBlobId,
+        mimeType: mimeType,
+        sourceName: sourceName,
+        gpsLat: gpsLat,
+        gpsLng: gpsLng,
+      );
 
   /// Serializes the item for local storage.
   Map<String, Object?> toJson() => <String, Object?>{
@@ -143,6 +199,12 @@ class MemoryItem {
         'note': note,
         'isCover': isCover,
         'isDemo': isDemo,
+        'blobId': blobId,
+        'thumbBlobId': thumbBlobId,
+        'mimeType': mimeType,
+        'sourceName': sourceName,
+        'gpsLat': gpsLat,
+        'gpsLng': gpsLng,
       };
 
   /// Returns a copy with the given fields replaced.
@@ -155,6 +217,16 @@ class MemoryItem {
     String? placeId,
     String? note,
     bool? isCover,
+    int? widthPx,
+    int? heightPx,
+    int? durationSeconds,
+    String? aspectRatio,
+    String? blobId,
+    String? thumbBlobId,
+    String? mimeType,
+    String? sourceName,
+    double? gpsLat,
+    double? gpsLng,
   }) =>
       MemoryItem(
         id: id,
@@ -167,12 +239,18 @@ class MemoryItem {
         tags: tags ?? this.tags,
         personIds: personIds ?? this.personIds,
         placeId: placeId ?? this.placeId,
-        aspectRatio: aspectRatio,
-        widthPx: widthPx,
-        heightPx: heightPx,
-        durationSeconds: durationSeconds,
+        aspectRatio: aspectRatio ?? this.aspectRatio,
+        widthPx: widthPx ?? this.widthPx,
+        heightPx: heightPx ?? this.heightPx,
+        durationSeconds: durationSeconds ?? this.durationSeconds,
         note: note ?? this.note,
         isCover: isCover ?? this.isCover,
         isDemo: isDemo,
+        blobId: blobId ?? this.blobId,
+        thumbBlobId: thumbBlobId ?? this.thumbBlobId,
+        mimeType: mimeType ?? this.mimeType,
+        sourceName: sourceName ?? this.sourceName,
+        gpsLat: gpsLat ?? this.gpsLat,
+        gpsLng: gpsLng ?? this.gpsLng,
       );
 }

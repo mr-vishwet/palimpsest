@@ -5,8 +5,10 @@ import '../core/theme.dart';
 import '../widgets/app_shell.dart';
 import '../widgets/common.dart';
 
-/// Sign out (m30 / w30): the local archive stays; delete removes
-/// the cloud copy only.
+/// Sign out (m30 / w30): the local archive stays. There is no cloud
+/// copy in this build — backup has never uploaded anything — so
+/// signing out only clears the recorded account (and, on request,
+/// the connected sources).
 class SignOutScreen extends StatelessWidget {
   /// Creates the sign-out screen.
   const SignOutScreen({super.key});
@@ -21,7 +23,7 @@ class SignOutScreen extends StatelessWidget {
       SnackBar(
         content: Text(
           deleteCloudCopy
-              ? 'Signed out — cloud copy deleted, local archive kept'
+              ? 'Signed out — connected sources cleared, local archive kept'
               : 'Signed out — your local archive stays',
         ),
       ),
@@ -80,7 +82,7 @@ class SignOutScreen extends StatelessWidget {
                     SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Delete removes the cloud copy only. Sign back in later to restore backup and sync.',
+                        'There is no cloud copy in this build — backup has never uploaded anything. Signing out only clears the recorded account.',
                       ),
                     ),
                   ],
@@ -101,7 +103,7 @@ class SignOutScreen extends StatelessWidget {
             onPressed: account.isSignedIn
                 ? () => _signOut(context, deleteCloudCopy: true)
                 : null,
-            child: const Text('Sign out and delete cloud copy'),
+            child: const Text('Sign out and disconnect sources'),
           ),
           const SizedBox(height: 8),
           TextButton(

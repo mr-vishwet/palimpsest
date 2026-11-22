@@ -1,24 +1,39 @@
+import 'dart:async';
+import 'dart:typed_data';
+
 import 'package:material_ui/material_ui.dart';
 
 import '../core/format.dart';
 import '../core/theme.dart';
 import '../models/memory_item.dart';
+import '../services/blob_store.dart';
+import '../services/blob_store_access.dart';
 
 /// A frame in the cutting-room grid.
 ///
-/// v0.1 has no real photo bytes — the tile renders a deterministic
-/// gradient from the item id, the kind icon, and the frame's metadata
-/// (ratio, capture time). Real thumbnails are a phase-2 item; the
-/// tile's layout is the one thumbnails will fill.
-class FrameTile extends StatelessWidget {
+/// When the item has a stored thumbnail ([MemoryItem.thumbBlobId]),
+/// the tile renders the real photo; otherwise — while loading, when
+/// no thumbnail exists (videos, undecodable files), or when no blob
+/// store is registered — it renders the deterministic gradient from
+/// the item id, the kind icon, and the frame's metadata.
+class FrameTile extends StatefulWidget {
   /// Creates a frame tile.
-  const FrameTile({required this.item, required this.onTap, super.key});
+  const FrameTile({
+    required this.item,
+    required this.onTap,
+    this.blobStore,
+    super.key,
+  });
 
   /// The memory to show.
   final MemoryItem item;
 
   /// Tap handler (opens the media detail).
   final VoidCallback onTap;
+
+  /// Blob store override for tests; otherwise the app-wide
+  /// registered store is used.
+  final BlobStore? blobStore;
 
   /// Deterministic gradient for an item id.
   static List<Color> gradientFor(String id) {
@@ -37,8 +52,57 @@ class FrameTile extends StatelessWidget {
     return palettes[hash % palettes.length];
   }
 
+  @override
+  State<FrameTile> createState() => _FrameTileState();
+}
+
+class _FrameTileState extends State<FrameTile> {
+  Uint8List? _thumbBytes;
+  String? _loadingFor;
+
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_loadThumb());
+  }
+
+  @override
+  void didUpdateWidget(FrameTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.item.thumbBlobId != widget.item.thumbBlobId) {
+      unawaited(_loadThumb());
+    }
+  }
+
+  Future<void> _loadThumb() async {
+    final thumbId = widget.item.thumbBlobId;
+    final store = widget.blobStore ?? BlobStoreAccess.current;
+    _loadingFor = thumbId;
+    if (thumbId == null || store == null) {
+      if (_thumbBytes != null) {
+        setState(() {
+          _thumbBytes = null;
+        });
+      }
+      return;
+    }
+    Uint8List? bytes;
+    try {
+      bytes = await store.get(thumbId);
+    } catch (_) {
+      // A missing or unreadable thumbnail falls back to the gradient.
+      bytes = null;
+    }
+    if (!mounted || _loadingFor != thumbId) {
+      return;
+    }
+    setState(() {
+      _thumbBytes = bytes;
+    });
+  }
+
   IconData _kindIcon() {
-    switch (item.kind) {
+    switch (widget.item.kind) {
       case MediaKind.photo:
         return Icons.photo_outlined;
       case MediaKind.video:
@@ -53,13 +117,15 @@ class FrameTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const palette = Palette.v7;
+    final item = widget.item;
+    final thumbBytes = _thumbBytes;
     return InkWell(
-      onTap: onTap,
+      onTap: widget.onTap,
       borderRadius: BorderRadius.circular(14),
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: gradientFor(item.id),
+            colors: FrameTile.gradientFor(item.id),
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -72,13 +138,24 @@ class FrameTile extends StatelessWidget {
         ),
         child: Stack(
           children: <Widget>[
-            Center(
-              child: Icon(
-                _kindIcon(),
-                size: 30,
-                color: Colors.white.withValues(alpha: 0.85),
+            if (thumbBytes != null)
+              Positioned.fill(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: Image.memory(
+                    thumbBytes,
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
-            ),
+            if (thumbBytes == null)
+              Center(
+                child: Icon(
+                  _kindIcon(),
+                  size: 30,
+                  color: Colors.white.withValues(alpha: 0.85),
+                ),
+              ),
             Positioned(
               left: 8,
               top: 8,

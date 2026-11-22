@@ -116,7 +116,7 @@ class Story {
     required this.videoCount,
     required this.coverArt,
     required this.startedAt,
-    this.isDemo = true,
+    this.isDemo = false,
   });
 
   /// Rebuilds a story from stored JSON.
@@ -134,7 +134,7 @@ class Story {
         videoCount: json['videoCount'] as int,
         coverArt: json['coverArt'] as String,
         startedAt: DateTime.parse(json['startedAt'] as String),
-        isDemo: json['isDemo'] as bool? ?? true,
+        isDemo: json['isDemo'] as bool? ?? false,
       );
 
   /// Stable id, e.g. `cruise`.
@@ -171,7 +171,8 @@ class Story {
   /// When the story started — drives timeline placement.
   final DateTime startedAt;
 
-  /// True for seeded demo-library content.
+  /// True for demo-media content (loaded from the bundled demo set).
+  /// Real imports and user-created content are false.
   final bool isDemo;
 
   /// Total play time: the sum of the chapters' play times.
@@ -207,6 +208,7 @@ class Story {
     List<Chapter>? chapters,
     int? photoCount,
     int? videoCount,
+    int? peopleCount,
   }) =>
       Story(
         id: id,
@@ -214,7 +216,7 @@ class Story {
         place: place,
         durationLabel: durationLabel,
         days: days,
-        peopleCount: peopleCount,
+        peopleCount: peopleCount ?? this.peopleCount,
         chapters: chapters ?? this.chapters,
         photoCount: photoCount ?? this.photoCount,
         videoCount: videoCount ?? this.videoCount,

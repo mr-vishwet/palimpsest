@@ -1,26 +1,45 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../core/constants.dart';
 import '../core/format.dart';
 import '../core/routes.dart';
 import '../core/theme.dart';
 import '../widgets/app_shell.dart';
 import '../widgets/common.dart';
 
-/// Settings (m17 / w17): full quality, on-device grouping, local
-/// transcription, no streaks. Plus the demo-library disclosure and
-/// the account row.
+/// Settings (m17 / w17): the two switches that do something
+/// (resurface, offline) plus honest notes about the rules that are
+/// fixed in this build — imports keep full quality, and face grouping
+/// and transcription arrive with the mobile app. No switch claims an
+/// effect it does not have. Plus the demo-media card and the account
+/// row.
 class SettingsScreen extends StatelessWidget {
   /// Creates the settings screen.
   const SettingsScreen({super.key});
 
-  void _resetDemo(BuildContext context) {
+  Future<void> _loadDemo(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final archive = AppScope.of(context).archive;
+    final result = await archive.loadDemoMedia();
+    final message = result.failures.isEmpty
+        ? (result.loaded == 0
+            ? 'Demo media is already loaded'
+            : 'Loaded ${result.loaded} demo files')
+        : 'Loaded ${result.loaded} demo files · '
+            '${result.failures.length} couldn’t be read';
+    messenger.showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  void _clearDemo(BuildContext context) {
+    final archive = AppScope.of(context).archive;
+    final count = archive.demoItemCount;
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Reset the demo library?'),
-        content: const Text(
-          'Your edits, moments and links will be replaced with the fresh seeded demo library. Your account stays signed in.',
+        title: const Text('Clear demo data?'),
+        content: Text(
+          'The $count demo photos and videos will be removed, along with '
+          'any demo stories and voice notes. Your own photos, stories '
+          'and voice notes stay.',
         ),
         actions: <Widget>[
           TextButton(
@@ -29,13 +48,13 @@ class SettingsScreen extends StatelessWidget {
           ),
           FilledButton(
             onPressed: () {
-              AppScope.of(context).archive.resetDemoLibrary();
+              final removed = archive.clearDemoData();
               Navigator.of(context).pop();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Demo library restored')),
+                SnackBar(content: Text('Cleared $removed demo items')),
               );
             },
-            child: const Text('Reset'),
+            child: const Text('Clear'),
           ),
         ],
       ),
@@ -67,37 +86,20 @@ class SettingsScreen extends StatelessWidget {
                 padding: EdgeInsets.zero,
                 child: Column(
                   children: <Widget>[
-                    _ToggleRow(
+                    const _InfoRow(
                       title: 'Full quality',
-                      subtitle: 'Keep originals at full quality, never recompress on import.',
-                      value: settings.fullQuality,
-                      onChanged: (v) => archive.updateSettings(
-                        settings.copyWith(fullQuality: v),
-                      ),
+                      subtitle:
+                          'Imports keep originals at full quality — nothing is recompressed. There is no quality setting to switch; this is how imports work.',
                     ),
-                    _ToggleRow(
+                    const _InfoRow(
                       title: 'On-device grouping',
-                      subtitle: 'Group faces on this device only — never on a server.',
-                      value: settings.onDeviceGrouping,
-                      onChanged: (v) => archive.updateSettings(
-                        settings.copyWith(onDeviceGrouping: v),
-                      ),
+                      subtitle:
+                          'Face grouping arrives with the mobile app and will run on-device only, while charging — never on a server.',
                     ),
-                    _ToggleRow(
+                    const _InfoRow(
                       title: 'Local transcription',
-                      subtitle: 'Transcribe voice notes on-device so they stay searchable.',
-                      value: settings.localTranscription,
-                      onChanged: (v) => archive.updateSettings(
-                        settings.copyWith(localTranscription: v),
-                      ),
-                    ),
-                    _ToggleRow(
-                      title: 'Group only while charging',
-                      subtitle: 'Face grouping waits for the charger.',
-                      value: settings.groupingOnlyWhenCharging,
-                      onChanged: (v) => archive.updateSettings(
-                        settings.copyWith(groupingOnlyWhenCharging: v),
-                      ),
+                      subtitle:
+                          'Voice-note transcription arrives with the mobile app and will run on-device, so notes stay searchable without uploading.',
                     ),
                     _ToggleRow(
                       title: 'Resurface moments',
@@ -109,7 +111,8 @@ class SettingsScreen extends StatelessWidget {
                     ),
                     _ToggleRow(
                       title: 'Offline mode',
-                      subtitle: 'Disable sharing, backup and sync; everything stays on-device.',
+                      subtitle:
+                          'Disable sharing, backup and sync; everything stays on-device.',
                       value: settings.offlineMode,
                       onChanged: (v) => archive.updateSettings(
                         settings.copyWith(offlineMode: v),
@@ -119,29 +122,22 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              Text('Storage', style: AppTheme.kicker()),
+              Text('Your archive', style: AppTheme.kicker()),
               const SizedBox(height: 8),
               GlassCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      Format.storage(
-                        AppConstants.storageUsedGb,
-                        AppConstants.storageTotalGb,
-                      ),
+                      '${Format.count(ArchiveCounts.photos(archive.items))} photos · '
+                      '${ArchiveCounts.videos(archive.items)} videos · '
+                      '${archive.voiceNotes.length} voice notes · '
+                      '${archive.stories.length} stories',
                       style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 8),
-                    LinearProgressIndicator(
-                      value: AppConstants.storageUsedGb /
-                          AppConstants.storageTotalGb,
-                      color: Palette.v7.gold,
-                      backgroundColor: Palette.v7.glassStrong,
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Thumbnails + index ${AppConstants.thumbnailsAndIndexGb} GB · ${AppConstants.uploadedBytes} uploaded',
+                      '${Format.count(archive.items.length)} items on this device · 0 uploaded',
                       style: AppTheme.mono(size: 11),
                     ),
                   ],
@@ -151,8 +147,7 @@ class SettingsScreen extends StatelessWidget {
               Text('Account', style: AppTheme.kicker()),
               const SizedBox(height: 8),
               GlassCard(
-                onTap: () =>
-                    Navigator.of(context).pushNamed(Routes.account),
+                onTap: () => Navigator.of(context).pushNamed(Routes.account),
                 child: Row(
                   children: <Widget>[
                     const Icon(Icons.person_outline, color: V7Colors.gold),
@@ -181,21 +176,35 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              Text('Demo library', style: AppTheme.kicker()),
+              Text('Demo media', style: AppTheme.kicker()),
               const SizedBox(height: 8),
               GlassCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      'This v0.1 build ships with a seeded demo library — four stories, the project weekend, five people, four places, nine voice notes. Headline totals (5,012 photos, 143 videos) are the demo archive’s numbers; the browsable subset is the curated seed.',
+                      'A set of real photos and videos ships with the app so you can '
+                      'see the archive working. They load through the same import '
+                      'pipeline as your own files and are marked as demo.',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 12),
-                    OutlinedButton(
-                      onPressed: () => _resetDemo(context),
-                      child: const Text('Reset demo library'),
-                    ),
+                    if (archive.hasDemoData)
+                      Text(
+                        '${archive.demoItemCount} demo items loaded.',
+                        style: AppTheme.mono(size: 11),
+                      ),
+                    if (archive.hasDemoData) const SizedBox(height: 12),
+                    if (archive.hasDemoData)
+                      OutlinedButton(
+                        onPressed: () => _clearDemo(context),
+                        child: const Text('Clear demo data'),
+                      )
+                    else
+                      OutlinedButton(
+                        onPressed: () => _loadDemo(context),
+                        child: const Text('Load demo media'),
+                      ),
                   ],
                 ),
               ),
@@ -216,6 +225,44 @@ class SettingsScreen extends StatelessWidget {
           wide: body,
         );
       },
+    );
+  }
+}
+
+/// An informational row for a rule that is fixed in this build: no
+/// switch, because there is nothing to switch — the row says what
+/// happens today instead of pretending a toggle controls it.
+class _InfoRow extends StatelessWidget {
+  const _InfoRow({required this.title, required this.subtitle});
+
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(title, style: Theme.of(context).textTheme.titleSmall),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall!
+                      .copyWith(color: Palette.v7.muted),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

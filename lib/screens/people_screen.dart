@@ -10,9 +10,9 @@ import '../widgets/app_shell.dart';
 import '../widgets/common.dart';
 import '../widgets/frame_tile.dart';
 
-/// People (m11 / w11): face grouping on-device — names are yours to
-/// add. 1,852 photos have people in them; grouping runs only when
-/// charging, and only on-device.
+/// People (m11 / w11): face groups, named by you. Automatic
+/// grouping arrives with the mobile app and will run on-device only.
+/// The counts come from the groups themselves.
 class PeopleScreen extends StatefulWidget {
   /// Creates the people screen.
   const PeopleScreen({super.key});
@@ -65,9 +65,8 @@ class _PeopleScreenState extends State<PeopleScreen> {
         final namedTotal = people
             .where((p) => p.isNamed)
             .fold(0, (sum, p) => sum + p.photoCount);
-        final selected = _selectedId == null
-            ? null
-            : archive.personById(_selectedId!);
+        final selected =
+            _selectedId == null ? null : archive.personById(_selectedId!);
         final List<MemoryItem> selectedItems = selected == null
             ? const <MemoryItem>[]
             : archive.items
@@ -88,14 +87,21 @@ class _PeopleScreenState extends State<PeopleScreen> {
               const SizedBox(height: 6),
               Text(
                 '${Format.count(namedTotal)} photos have people in them. '
-                'Grouping runs only when charging, and only on-device — '
-                'names are yours to add.',
+                'Face grouping arrives with the mobile app and will run '
+                'on-device only — names are yours to add.',
                 style: Theme.of(context)
                     .textTheme
                     .bodyMedium!
                     .copyWith(color: Palette.v7.parchment),
               ),
               const SizedBox(height: 16),
+              if (people.isEmpty)
+                const EmptyState(
+                  icon: Icons.people_outline,
+                  title: 'No people yet',
+                  body:
+                      'Face groups appear here when the archive holds photos of people. Automatic grouping arrives with the mobile app.',
+                ),
               for (final person in people)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 10),
@@ -105,9 +111,8 @@ class _PeopleScreenState extends State<PeopleScreen> {
                         : null,
                     onTap: () {
                       setState(() {
-                        _selectedId = _selectedId == person.id
-                            ? null
-                            : person.id;
+                        _selectedId =
+                            _selectedId == person.id ? null : person.id;
                         _nameController.text =
                             person.isNamed ? person.name! : '';
                       });
@@ -118,9 +123,7 @@ class _PeopleScreenState extends State<PeopleScreen> {
                           backgroundColor:
                               _colorFor(person.colorKey).withValues(alpha: 0.2),
                           child: Text(
-                            person.isNamed
-                                ? person.name![0]
-                                : '?',
+                            person.isNamed ? person.name![0] : '?',
                             style: TextStyle(
                               color: _colorFor(person.colorKey),
                               fontWeight: FontWeight.w700,
@@ -186,13 +189,13 @@ class _PeopleScreenState extends State<PeopleScreen> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'In the demo library · ${selectedItems.length} frames',
+                        'In the library · ${selectedItems.length} frames',
                         style: AppTheme.kicker(),
                       ),
                       const SizedBox(height: 8),
                       if (selectedItems.isEmpty)
                         const Text(
-                          'No frames with this person in the demo subset.',
+                          'No frames with this person in the library yet.',
                           style: TextStyle(color: V7Colors.muted),
                         )
                       else

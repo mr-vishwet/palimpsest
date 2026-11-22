@@ -22,6 +22,33 @@ dependencies:
   # JSON document in shared_preferences in v0.1. A Drift/SQLite store behind
   # the same ArchiveStore interface is a phase-2 item.
   shared_preferences: ^2.3.4
+  # Real file import: multi-select picker for photos and videos.
+  file_picker: ^13.4.1
+  # EXIF parsing for imported photos (capture date, GPS, orientation).
+  exif: ^3.3.0
+  # Pure-Dart image decode/resize/encode for import thumbnails.
+  image: ^4.13.1
+  # Drift/SQLite metadata store behind the ArchiveStore interface.
+  drift: ^2.35.4
+  # Bundled native SQLite library (VM tests, mobile, desktop).
+  sqlite3_flutter_libs: ^0.6.0
+  # IndexedDB access for the web blob store.
+  idb_shim: ^2.11.3
+  # App documents directory for the native blob store and database file.
+  path_provider: ^2.1.6
+  # --- Worker C (media features): added here so only one worker owns pubspec.
+  # Voice-note recording.
+  record: ^7.2.0
+  # Voice-note playback.
+  audioplayers: ^6.8.1
+  # Video playback + metadata probing.
+  video_player: ^2.14.1
+  # Share sheet for exports.
+  share_plus: ^13.3.1
+  # ZIP encoding for story exports (Worker C).
+  archive: ^4.7.1
+  # Browser APIs for web-only media paths (Worker C).
+  web: ^1.1.2
   # SHA-256 checksums for the provenance contract: every memory links to a
   # source id + checksum, and exports are deterministic.
   crypto: ^3.0.6
@@ -32,8 +59,13 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  # Drift code generation (generated files are committed; CI does not
+  # run build_runner).
+  drift_dev: ^2.35.3
+  build_runner: ^2.17.1
 
 flutter:
   uses-material-design: true
   assets:
     - assets/logos/
+    - assets/demo/

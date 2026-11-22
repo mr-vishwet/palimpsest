@@ -1,11 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:palimpsest/engine/archive_index.dart';
 import 'package:palimpsest/models/memory_item.dart';
-import 'package:palimpsest/services/demo_seed.dart';
+
+import 'test_fixtures.dart';
 
 void main() {
   group('ArchiveIndex', () {
-    final data = DemoSeed.build();
+    final data = TestFixtures.archive();
     late ArchiveIndex index;
 
     setUp(() {

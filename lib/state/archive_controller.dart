@@ -16,7 +16,9 @@ import '../models/share_link.dart';
 import '../models/story.dart';
 import '../models/voice_note.dart';
 import '../services/archive_store.dart';
-import '../services/demo_seed.dart';
+import '../services/blob_store.dart';
+import '../services/demo_media_loader.dart';
+import '../services/import_service.dart';
 
 /// The archive's state: one [ArchiveData] document, mutated through
 /// methods that persist on every change.
@@ -26,18 +28,27 @@ import '../services/demo_seed.dart';
 /// write a [MemoryLayer] — nothing is ever overwritten; the older
 /// layers stay visible beneath.
 class ArchiveController extends ChangeNotifier {
-  /// Creates the controller over the loaded (or seeded) archive.
+  /// Creates the controller over the loaded (or empty) archive.
+  /// Pass [blobStore] in tests; otherwise the platform store is used.
+  /// Stored counts are recomputed from the items on the way in, so a
+  /// document written by an older build never shows stale numbers.
   ArchiveController({
     required ArchiveStore store,
     required ArchiveData initialData,
+    BlobStore? blobStore,
   })  : _store = store,
-        _data = initialData;
+        _data = _withDerivedCounts(initialData),
+        _blobStore = blobStore ?? BlobStore();
 
   final ArchiveStore _store;
+  final BlobStore _blobStore;
   ArchiveData _data;
 
   /// The whole archive document.
   ArchiveData get data => _data;
+
+  /// The blob store holding imported originals and thumbnails.
+  BlobStore get blobStore => _blobStore;
 
   /// Stories in the archive.
   List<Story> get stories => _data.stories;
@@ -71,6 +82,12 @@ class ArchiveController extends ChangeNotifier {
 
   /// Import queue state.
   ImportState get importState => _data.importState;
+
+  /// Demo-media items currently in the archive.
+  int get demoItemCount => _data.items.where((i) => i.isDemo).length;
+
+  /// True when any demo-media content is loaded.
+  bool get hasDemoData => demoItemCount > 0;
 
   /// The most recent reconstructed moment, if any.
   ReconstructedMoment? get latestMoment =>
@@ -402,6 +419,8 @@ class ArchiveController extends ChangeNotifier {
                       waveform: v.waveform,
                       storyId: storyId,
                       attachedMemoryId: v.attachedMemoryId,
+                      blobId: v.blobId,
+                      mimeType: v.mimeType,
                       isDemo: v.isDemo,
                     )
                   : v,
@@ -555,9 +574,14 @@ class ArchiveController extends ChangeNotifier {
   }
 
   /// Deletes a memory for real: the item and its layers leave the
-  /// index. (Originals are untouched — v0.1 has no file originals;
-  /// the demo library is metadata.)
+  /// index, and its stored blobs (original + thumbnail) are deleted.
+  /// Blob cleanup is best-effort — a failed delete never blocks the
+  /// removal, and orphaned blobs are harmless.
   void deleteItem(String itemId) {
+    final item = itemById(itemId);
+    if (item != null) {
+      unawaited(_deleteBlobs(item.blobId, item.thumbBlobId));
+    }
     _update(
       _data.copyWith(
         items: _data.items.where((i) => i.id != itemId).toList(growable: false),
@@ -568,78 +592,194 @@ class ArchiveController extends ChangeNotifier {
     );
   }
 
-  /// Starts (or resumes) indexing.
-  void startImport() {
-    if (_data.importState.status == ImportStatus.done) {
-      return;
+  /// Adds freshly imported items to the archive, skipping any whose
+  /// checksum is already present — re-importing the same file is a
+  /// no-op. Returns the number of items actually added.
+  int addImportedItems(List<MemoryItem> items) {
+    if (items.isEmpty) {
+      return 0;
+    }
+    final known = _data.items.map((i) => i.checksum).toSet();
+    final fresh = items
+        .where((i) => !known.contains(i.checksum))
+        .toList(growable: false);
+    if (fresh.isEmpty) {
+      return 0;
     }
     _update(
-      _data.copyWith(
-        importState: _data.importState.copyWith(status: ImportStatus.indexing),
-      ),
+      _data.copyWith(items: <MemoryItem>[..._data.items, ...fresh]),
     );
+    return fresh.length;
   }
 
-  /// Pauses indexing.
-  void pauseImport() {
-    _update(
-      _data.copyWith(
-        importState: _data.importState.copyWith(status: ImportStatus.paused),
-      ),
-    );
-  }
-
-  /// Advances indexing by [count] items. When the queue empties the
-  /// status becomes done.
-  void advanceImport(int count) {
+  /// Records a finished import batch in the import queue state.
+  void recordImport({required int total, required int imported}) {
     final state = _data.importState;
-    if (state.status != ImportStatus.indexing) {
-      return;
-    }
-    final indexed = (state.indexed + count).clamp(0, state.total).toInt();
     _update(
       _data.copyWith(
         importState: state.copyWith(
-          indexed: indexed,
-          status:
-              indexed >= state.total ? ImportStatus.done : ImportStatus.indexing,
+          total: state.total + total,
+          indexed: state.indexed + imported,
+          status: ImportStatus.done,
         ),
       ),
     );
   }
 
-  /// Queues a new import batch from [sourceLabel].
-  void addImportBatch(int count, String sourceLabel) {
-    final state = _data.importState;
+  /// Replaces an item with an updated copy. Used by media probing to
+  /// write back duration/dimensions after first playback. A no-op
+  /// when the id is unknown.
+  void updateItem(MemoryItem next) {
+    if (itemById(next.id) == null) {
+      return;
+    }
+    _update(_data.copyWith(items: _replaceItem(next)));
+  }
+
+  /// Writes back probed media dimensions/duration for an item
+  /// (video metadata on first playback). The aspect label is
+  /// recomputed from the probed dimensions so the tile stays honest.
+  /// A no-op when the id is unknown.
+  void updateItemMedia(
+    String itemId, {
+    int? durationSeconds,
+    int? widthPx,
+    int? heightPx,
+  }) {
+    final item = itemById(itemId);
+    if (item == null) {
+      return;
+    }
+    final nextWidth = widthPx ?? item.widthPx;
+    final nextHeight = heightPx ?? item.heightPx;
     _update(
       _data.copyWith(
-        importState: state.copyWith(
-          total: state.total + count,
-          status: ImportStatus.indexing,
-          sourceLabel: sourceLabel,
+        items: _replaceItem(
+          item.copyWith(
+            durationSeconds: durationSeconds ?? item.durationSeconds,
+            widthPx: nextWidth,
+            heightPx: nextHeight,
+            aspectRatio: ImportService.aspectLabelFor(nextWidth, nextHeight),
+          ),
         ),
       ),
     );
   }
 
-  /// Restores the seeded demo library, keeping the account and
-  /// onboarding state. Used from Settings.
-  void resetDemoLibrary() {
-    final seed = DemoSeed.build();
+  /// Adds a place to the archive, replacing any place with the same
+  /// id (an edit that re-saves is an update, not a duplicate).
+  void addPlace(Place place) {
+    final exists = placeById(place.id) != null;
     _update(
       _data.copyWith(
-        stories: seed.stories,
-        items: seed.items,
-        layers: seed.layers,
-        people: seed.people,
-        places: seed.places,
-        voiceNotes: seed.voiceNotes,
-        shareLinks: const <ShareLink>[],
-        moments: seed.moments,
-        corrections: const <String, List<String>>{},
-        importState: seed.importState,
+        places: exists
+            ? _data.places
+                .map((p) => p.id == place.id ? place : p)
+                .toList(growable: false)
+            : <Place>[..._data.places, place],
       ),
     );
+  }
+
+  /// Renames a place. A no-op when the id is unknown.
+  void renamePlace(String placeId, String name) {
+    final place = placeById(placeId);
+    if (place == null) {
+      return;
+    }
+    _update(
+      _data.copyWith(
+        places: _data.places
+            .map((p) => p.id == placeId ? p.copyWith(name: name) : p)
+            .toList(growable: false),
+      ),
+    );
+  }
+
+  /// Adds a recorded voice note and its archive item together.
+  /// Either side replaces an existing entry with the same id.
+  void addVoiceNote(VoiceNote note, MemoryItem item) {
+    final notes = voiceNoteById(note.id) == null
+        ? <VoiceNote>[..._data.voiceNotes, note]
+        : _data.voiceNotes
+            .map((v) => v.id == note.id ? note : v)
+            .toList(growable: false);
+    final items = itemById(item.id) == null
+        ? <MemoryItem>[..._data.items, item]
+        : _replaceItem(item);
+    _update(_data.copyWith(voiceNotes: notes, items: items));
+  }
+
+  /// Loads the bundled demo media through the real import pipeline
+  /// (see [DemoMediaLoader]). Re-running is safe: files already in
+  /// the archive dedup by checksum. Returns the load result.
+  Future<DemoMediaLoadResult> loadDemoMedia() {
+    final loader = DemoMediaLoader(
+      importer: ImportService(blobs: _blobStore),
+    );
+    return loader.loadInto(this);
+  }
+
+  /// Deletes all demo-media content: demo items (and their blobs and
+  /// layers), demo stories, demo voice notes, and moments whose
+  /// visible items were all demo. User content is never touched.
+  /// Returns the number of demo items removed.
+  int clearDemoData() {
+    final demoItems =
+        _data.items.where((i) => i.isDemo).toList(growable: false);
+    final demoItemIds = demoItems.map((i) => i.id).toSet();
+    for (final item in demoItems) {
+      unawaited(_deleteBlobs(item.blobId, item.thumbBlobId));
+    }
+    final stories = <Story>[];
+    for (final story in _data.stories) {
+      if (story.isDemo) {
+        continue;
+      }
+      // A surviving story keeps its chapters, but a cover frame
+      // pointing at a deleted demo item is cleared (Chapter.copyWith
+      // cannot null the cover, so the chapter is rebuilt).
+      final chapters = story.chapters.map((chapter) {
+        if (chapter.coverFrameId == null ||
+            !demoItemIds.contains(chapter.coverFrameId)) {
+          return chapter;
+        }
+        return Chapter(
+          id: chapter.id,
+          storyId: chapter.storyId,
+          title: chapter.title,
+          caption: chapter.caption,
+          day: chapter.day,
+          photoCount: chapter.photoCount,
+          videoCount: chapter.videoCount,
+          playSeconds: chapter.playSeconds,
+          order: chapter.order,
+        );
+      }).toList(growable: false);
+      stories.add(story.copyWith(chapters: chapters));
+    }
+    final moments = _data.moments.where((moment) {
+      final visible = moment.visibleItemIds;
+      if (visible.isEmpty) {
+        return true;
+      }
+      return visible.any((id) => !demoItemIds.contains(id));
+    }).toList(growable: false);
+    _update(
+      _data.copyWith(
+        items:
+            _data.items.where((i) => !i.isDemo).toList(growable: false),
+        stories: stories,
+        layers: _data.layers
+            .where((l) => !demoItemIds.contains(l.memoryId))
+            .toList(growable: false),
+        voiceNotes: _data.voiceNotes
+            .where((v) => !v.isDemo)
+            .toList(growable: false),
+        moments: moments,
+      ),
+    );
+    return demoItems.length;
   }
 
   String _layerId(String itemId) =>
@@ -670,12 +810,113 @@ class ArchiveController extends ChangeNotifier {
       .toList(growable: false);
 
   void _update(ArchiveData next) {
-    _data = next;
+    _data = _withDerivedCounts(next);
     _persist();
     notifyListeners();
   }
 
+  /// Recomputes every stored count from the items: story and chapter
+  /// photo/video counts and play lengths, story people counts, and
+  /// person/place photo counts. Stored counts are a cache, never the
+  /// truth — recomputing on every mutation keeps screens honest even
+  /// when items move, are deleted, or arrive with stale counts from
+  /// an older build. Play length is 4 s per photo (the story player's
+  /// dwell) plus recorded durations for videos and voice notes.
+  static ArchiveData _withDerivedCounts(ArchiveData data) {
+    final byStory = <String, List<MemoryItem>>{};
+    final byChapter = <String, List<MemoryItem>>{};
+    for (final item in data.items) {
+      final storyId = item.storyId;
+      if (storyId != null) {
+        (byStory[storyId] ??= <MemoryItem>[]).add(item);
+        final chapterId = item.chapterId;
+        if (chapterId != null) {
+          (byChapter[chapterId] ??= <MemoryItem>[]).add(item);
+        }
+      }
+    }
+
+    int playSecondsFor(List<MemoryItem> items) {
+      var seconds = 0;
+      for (final item in items) {
+        switch (item.kind) {
+          case MediaKind.photo:
+            seconds += 4;
+          case MediaKind.video:
+          case MediaKind.voiceNote:
+            seconds += item.durationSeconds ?? 0;
+          case MediaKind.note:
+            break;
+        }
+      }
+      return seconds;
+    }
+
+    int photosIn(List<MemoryItem> items) =>
+        items.where((i) => i.kind == MediaKind.photo).length;
+    int videosIn(List<MemoryItem> items) =>
+        items.where((i) => i.kind == MediaKind.video).length;
+
+    final stories = data.stories.map((story) {
+      final storyItems = byStory[story.id] ?? const <MemoryItem>[];
+      final chapters = story.chapters.map((chapter) {
+        final chapterItems = byChapter[chapter.id] ?? const <MemoryItem>[];
+        return chapter.copyWith(
+          photoCount: photosIn(chapterItems),
+          videoCount: videosIn(chapterItems),
+          playSeconds: playSecondsFor(chapterItems),
+        );
+      }).toList(growable: false);
+      return story.copyWith(
+        chapters: chapters,
+        photoCount: photosIn(storyItems),
+        videoCount: videosIn(storyItems),
+        peopleCount:
+            storyItems.expand((i) => i.personIds).toSet().length,
+      );
+    }).toList(growable: false);
+
+    final people = data.people.map((person) {
+      return person.copyWith(
+        photoCount: data.items
+            .where(
+              (i) =>
+                  i.kind == MediaKind.photo &&
+                  i.personIds.contains(person.id),
+            )
+            .length,
+      );
+    }).toList(growable: false);
+
+    final places = data.places.map((place) {
+      return place.copyWith(
+        photoCount: data.items
+            .where((i) => i.kind == MediaKind.photo && i.placeId == place.id)
+            .length,
+      );
+    }).toList(growable: false);
+
+    return data.copyWith(
+      stories: stories,
+      people: people,
+      places: places,
+    );
+  }
+
   void _persist() {
     unawaited(_store.save(_data));
+  }
+
+  Future<void> _deleteBlobs(String? blobId, String? thumbBlobId) async {
+    try {
+      if (blobId != null) {
+        await _blobStore.delete(blobId);
+      }
+      if (thumbBlobId != null) {
+        await _blobStore.delete(thumbBlobId);
+      }
+    } catch (_) {
+      // Best-effort cleanup (see deleteItem).
+    }
   }
 }

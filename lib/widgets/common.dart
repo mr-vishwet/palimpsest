@@ -1,6 +1,133 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../core/theme.dart';
+import '../models/memory_item.dart';
+
+/// Counts derived from the real archive — the one place screens
+/// compute photo/video/voice/note totals, so no screen invents them
+/// from headline constants. Counts are 0 on a fresh archive; that is
+/// honest, not a bug.
+abstract final class ArchiveCounts {
+  /// Photos in [items].
+  static int photos(Iterable<MemoryItem> items) =>
+      items.where((i) => i.kind == MediaKind.photo).length;
+
+  /// Videos in [items].
+  static int videos(Iterable<MemoryItem> items) =>
+      items.where((i) => i.kind == MediaKind.video).length;
+
+  /// Voice-note items in [items].
+  static int voiceNotes(Iterable<MemoryItem> items) =>
+      items.where((i) => i.kind == MediaKind.voiceNote).length;
+
+  /// Written notes in [items].
+  static int notes(Iterable<MemoryItem> items) =>
+      items.where((i) => i.kind == MediaKind.note).length;
+}
+
+/// The calendar span of an archive: the first and last year any item
+/// was taken, and how many years that covers. Null when [items] is
+/// empty — there is no span to show.
+({int startYear, int endYear, int years})? archiveYearSpan(
+  Iterable<MemoryItem> items,
+) {
+  var start = 0;
+  var end = 0;
+  var any = false;
+  for (final item in items) {
+    final year = item.takenAt.year;
+    if (!any || year < start) {
+      start = year;
+    }
+    if (!any || year > end) {
+      end = year;
+    }
+    any = true;
+  }
+  if (!any) {
+    return null;
+  }
+  return (startYear: start, endYear: end, years: end - start + 1);
+}
+
+/// One resurfaced day: the items taken on a single calendar day in a
+/// past year, picked because that day falls in the current week.
+class ResurfacedDay {
+  /// Creates a resurfaced day.
+  const ResurfacedDay({required this.date, required this.items});
+
+  /// The past calendar day (year, month, day of the items).
+  final DateTime date;
+
+  /// Items taken on that day, chronological.
+  final List<MemoryItem> items;
+
+  /// Whole years between this day and [now].
+  int yearsAgo(DateTime now) => now.year - date.year;
+
+  /// Photos taken that day.
+  int get photos => ArchiveCounts.photos(items);
+
+  /// Videos taken that day.
+  int get videos => ArchiveCounts.videos(items);
+
+  /// Distinct people in the day's items.
+  int get peopleCount => items.expand((i) => i.personIds).toSet().length;
+
+  /// The story most of the day's items belong to, if they share one.
+  String? get sharedStoryId {
+    final ids = items.map((i) => i.storyId).whereType<String>().toSet();
+    return ids.length == 1 ? ids.single : null;
+  }
+
+  /// The chapter most of the day's items belong to, if they share one.
+  String? get sharedChapterId {
+    final ids = items.map((i) => i.chapterId).whereType<String>().toSet();
+    return ids.length == 1 ? ids.single : null;
+  }
+}
+
+/// Picks the day to resurface from [items]: items taken in past years
+/// whose month/day falls within a week of [now]'s month/day, grouped
+/// by day. The day with the most items wins; ties go to the most
+/// recent year. Returns null when nothing from a past year falls in
+/// this week — the honest empty state, not a fallback to a seeded
+/// memory.
+ResurfacedDay? pickResurfacedDay(
+  Iterable<MemoryItem> items,
+  DateTime now,
+) {
+  final today = DateTime(now.year, now.month, now.day);
+  final byDay = <DateTime, List<MemoryItem>>{};
+  for (final item in items) {
+    final taken = item.takenAt;
+    if (taken.year >= now.year) {
+      continue;
+    }
+    // The item's anniversary in the current year. Feb 29 normalizes
+    // to Mar 1 in a non-leap year; a one-day drift there is harmless.
+    final anniversary = DateTime(now.year, taken.month, taken.day);
+    if (anniversary.difference(today).inDays.abs() > 7) {
+      continue;
+    }
+    final day = DateTime(taken.year, taken.month, taken.day);
+    (byDay[day] ??= <MemoryItem>[]).add(item);
+  }
+  if (byDay.isEmpty) {
+    return null;
+  }
+  var best = byDay.entries.first;
+  for (final entry in byDay.entries.skip(1)) {
+    if (entry.value.length > best.value.length ||
+        (entry.value.length == best.value.length &&
+            entry.key.isAfter(best.key))) {
+      best = entry;
+    }
+  }
+  final dayItems = best.value.toList(growable: false)
+    ..sort((a, b) => a.takenAt.compareTo(b.takenAt));
+  return ResurfacedDay(date: best.key, items: dayItems);
+}
 
 /// A glassmorphic card: translucent surface, hairline border, soft
 /// radius — the V7 card language.

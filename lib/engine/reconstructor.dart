@@ -26,10 +26,6 @@ class AnchorFind {
 /// user previously removed for the same question are excluded — the
 /// correction is remembered.
 abstract final class Reconstructor {
-  /// The tag marking the canonical project-weekend items in the demo
-  /// library.
-  static const String projectWeekendTag = 'project-weekend';
-
   /// Reconstructs a moment for [query] over [data].
   static ReconstructedMoment reconstruct(
     String query,
@@ -51,21 +47,7 @@ abstract final class Reconstructor {
         data.corrections[normalized] ?? const <String>[];
 
     List<SearchHit> hits;
-    if (_isCanonical(query)) {
-      // The hero question: the weekend the project started. The demo
-      // library tags those items explicitly, so the answer is exact —
-      // and two weakly-tagged items are flagged as looking wrong.
-      hits = data.items
-          .where((item) => item.tags.contains(projectWeekendTag))
-          .map(
-            (item) => SearchHit(
-              item: item,
-              score: _canonicalScore(item),
-              reason: _canonicalReason(item),
-            ),
-          )
-          .toList(growable: false);
-    } else if (normalized.isEmpty) {
+    if (normalized.isEmpty) {
       // A question of only stopwords ("what was that") carries no
       // searchable words. The index answers an empty token list with
       // the whole library — right for library browsing, wrong here:
@@ -156,13 +138,10 @@ abstract final class Reconstructor {
     return anchors;
   }
 
-  /// A title for the question. The canonical question gets its
-  /// canonical title; anything else is tidied into a moment title.
+  /// A title for the question: the question tidied into a moment
+  /// title.
   static String titleFor(String query) {
     final trimmed = query.trim();
-    if (_isCanonical(trimmed)) {
-      return 'The weekend the project started';
-    }
     var title = trimmed;
     for (final prefix in <String>[
       'show me ',
@@ -178,47 +157,6 @@ abstract final class Reconstructor {
       return 'A moment';
     }
     return title[0].toUpperCase() + title.substring(1);
-  }
-
-  /// True when the question is the canonical hero question (or the
-  /// short suggested-question form of it).
-  static bool _isCanonical(String query) {
-    final lower = query.toLowerCase();
-    if (lower.contains('weekend') && lower.contains('project')) {
-      return true;
-    }
-    return lower.trim() == 'the weekend the project started';
-  }
-
-  /// Canonical scoring: items from the project weekend score high;
-  /// the two weakly-tagged strays score at the weak threshold so the
-  /// UI flags them as looking wrong.
-  static double _canonicalScore(MemoryItem item) {
-    if (item.tags.contains('looks-wrong')) {
-      return ArchiveIndex.weakThreshold;
-    }
-    if (item.title.startsWith('First ')) {
-      return 9;
-    }
-    return 6;
-  }
-
-  /// Canonical reasons: the first sketch, the first voice note and the
-  /// first cut carry their story; the rest carry their tag.
-  static String _canonicalReason(MemoryItem item) {
-    if (item.title == 'First sketch') {
-      return 'First sketch — Saturday 09:12';
-    }
-    if (item.title == 'First voice note') {
-      return 'First voice note — Saturday 22:40';
-    }
-    if (item.title == 'First cut') {
-      return 'First cut — Sunday 18:03';
-    }
-    if (item.tags.contains('looks-wrong')) {
-      return 'Matched "project" — from a different weekend';
-    }
-    return 'From the project weekend';
   }
 
   static String _shortDay(DateTime at) {

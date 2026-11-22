@@ -69,9 +69,8 @@ class _ChapterEditScreenState extends State<ChapterEditScreen> {
       listenable: archive,
       builder: (context, _) {
         final story = archive.storyById(widget.storyId);
-        final chapter = story?.chapters
-            .where((c) => c.id == widget.chapterId)
-            .firstOrNull;
+        final chapter =
+            story?.chapters.where((c) => c.id == widget.chapterId).firstOrNull;
         if (story == null || chapter == null) {
           return const ResponsiveScaffold(
             title: 'Chapter',
@@ -144,7 +143,7 @@ class _ChapterEditScreenState extends State<ChapterEditScreen> {
               const SizedBox(height: 8),
               if (frames.isEmpty)
                 const Text(
-                  'No frames in this chapter in the demo library yet.',
+                  'No frames in this chapter yet.',
                   style: TextStyle(color: V7Colors.muted),
                 )
               else

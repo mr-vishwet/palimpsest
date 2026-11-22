@@ -1,20 +1,19 @@
-import 'dart:async';
-
+import 'package:file_picker/file_picker.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../core/format.dart';
 import '../core/theme.dart';
-import '../models/archive_data.dart';
+import '../services/import_service.dart';
 import '../widgets/app_shell.dart';
 import '../widgets/common.dart';
 
-/// Import (m14 / w14): photos, prints, voice memos — everything lands
-/// here first. Indexing is honest about progress: 842 of 1,204
-/// indexed, 0 bytes uploaded.
+/// Import (m14 / w14): photos and videos land here first.
 ///
-/// v0.1 simulates the indexing queue over the demo batch (real photo
-/// library access is a phase-2 item); the queue state, progress and
-/// completion are real and persisted.
+/// The user picks files from the device; each file is hashed,
+/// thumbnailed and stored locally (original bytes in the blob store,
+/// metadata in the archive). Nothing is uploaded. A bad file skips
+/// with a reason and never aborts the batch; re-importing the same
+/// file is a no-op (matched by checksum).
 class ImportScreen extends StatefulWidget {
   /// Creates the import screen.
   const ImportScreen({super.key});
@@ -24,23 +23,73 @@ class ImportScreen extends StatefulWidget {
 }
 
 class _ImportScreenState extends State<ImportScreen> {
-  Timer? _timer;
+  bool _importing = false;
+  int _done = 0;
+  int _total = 0;
+  String _currentName = '';
+  ImportResult? _result;
+  int _added = 0;
 
-  @override
-  void initState() {
-    super.initState();
-    _timer = Timer.periodic(const Duration(milliseconds: 600), (_) {
-      if (!mounted) {
-        return;
+  Future<void> _pickAndImport() async {
+    final archive = AppScope.of(context).archive;
+    // file_picker 13: pickFiles returns the picked files directly
+    // (an empty list when the user cancels); bytes are read per
+    // file with readAsBytes(), on every platform.
+    final picked = await FilePicker.pickFiles(type: FileType.media);
+    if (picked.isEmpty || !mounted) {
+      return;
+    }
+    final inputs = <ImportFileInput>[];
+    final unreadable = <ImportFailure>[];
+    for (final file in picked) {
+      try {
+        final bytes = await file.readAsBytes();
+        inputs.add(ImportFileInput(name: file.name, bytes: bytes));
+      } catch (_) {
+        unreadable.add(
+          ImportFailure(
+            name: file.name,
+            reason: 'Could not read this file',
+          ),
+        );
       }
-      AppScope.of(context).archive.advanceImport(9);
+    }
+    setState(() {
+      _importing = true;
+      _done = 0;
+      _total = inputs.length;
+      _currentName = '';
+      _result = null;
+      _added = 0;
     });
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
+    final service = ImportService(blobs: archive.blobStore);
+    final result = await service.importFiles(
+      inputs,
+      onProgress: (done, total, currentName) {
+        if (!mounted) {
+          return;
+        }
+        setState(() {
+          _done = done;
+          _total = total;
+          _currentName = currentName;
+        });
+      },
+    );
+    if (!mounted) {
+      return;
+    }
+    final merged = ImportResult(
+      imported: result.imported,
+      failures: <ImportFailure>[...unreadable, ...result.failures],
+    );
+    final added = archive.addImportedItems(merged.imported);
+    archive.recordImport(total: merged.total, imported: added);
+    setState(() {
+      _importing = false;
+      _result = merged;
+      _added = added;
+    });
   }
 
   @override
@@ -50,36 +99,7 @@ class _ImportScreenState extends State<ImportScreen> {
       listenable: archive,
       builder: (context, _) {
         final state = archive.importState;
-        final indexing = state.status == ImportStatus.indexing;
-        final done = state.status == ImportStatus.done;
-
-        final sources = <({String label, String hint, IconData icon, int count})>[
-          (
-            label: 'Photos',
-            hint: 'From the camera roll',
-            icon: Icons.photo_library_outlined,
-            count: 320,
-          ),
-          (
-            label: 'Prints',
-            hint: 'Scan the photo box',
-            icon: Icons.scanner_outlined,
-            count: 48,
-          ),
-          (
-            label: 'Voice memos',
-            hint: 'Recordings + transcripts',
-            icon: Icons.mic_outlined,
-            count: 12,
-          ),
-          (
-            label: 'Files',
-            hint: 'Videos and documents',
-            icon: Icons.folder_outlined,
-            count: 86,
-          ),
-        ];
-
+        final result = _result;
         final body = SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -96,107 +116,130 @@ class _ImportScreenState extends State<ImportScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        Text(
-                          done ? 'Indexing complete' : 'Indexing ${state.sourceLabel}',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        StatusPill(
-                          label: done
-                              ? 'Done'
-                              : indexing
-                                  ? 'Indexing'
-                                  : 'Paused',
-                          dotColor: done
-                              ? Palette.v7.green
-                              : indexing
-                                  ? Palette.v7.gold
-                                  : Palette.v7.muted,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    LinearProgressIndicator(
-                      value: state.progress,
-                      color: Palette.v7.gold,
-                      backgroundColor: Palette.v7.glassStrong,
-                    ),
-                    const SizedBox(height: 8),
                     Text(
-                      '${Format.count(state.indexed)} of ${Format.count(state.total)} indexed · ${(state.progress * 100).round()}% · 0 bytes uploaded',
-                      style: AppTheme.mono(size: 12),
+                      'Add photos & videos',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Pick files from this device. Originals are stored '
+                      'locally at full quality; nothing is uploaded.',
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                     const SizedBox(height: 12),
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: GradientButton(
-                            label: done
-                                ? 'All indexed'
-                                : indexing
-                                    ? 'Pause'
-                                    : 'Resume indexing',
-                            expanded: true,
-                            onPressed: done
-                                ? null
-                                : indexing
-                                    ? archive.pauseImport
-                                    : archive.startImport,
-                          ),
-                        ),
-                      ],
+                    GradientButton(
+                      label: _importing ? 'Importing…' : 'Choose photos & videos',
+                      expanded: true,
+                      onPressed: _importing ? null : _pickAndImport,
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
-              Text('Sources', style: AppTheme.kicker()),
-              const SizedBox(height: 8),
-              for (final source in sources)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: GlassCard(
-                    child: Row(
-                      children: <Widget>[
-                        Icon(source.icon, color: Palette.v7.gold),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Text(
-                                source.label,
-                                style: Theme.of(context).textTheme.titleSmall,
-                              ),
-                              Text(source.hint, style: AppTheme.mono(size: 11)),
-                            ],
+              if (_importing) ...<Widget>[
+                const SizedBox(height: 16),
+                GlassCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Text(
+                            'Importing',
+                            style: Theme.of(context).textTheme.titleMedium,
                           ),
-                        ),
-                        OutlinedButton(
-                          onPressed: () {
-                            archive.addImportBatch(
-                              source.count,
-                              source.label,
-                            );
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  '${source.count} items queued from ${source.label}',
-                                ),
-                              ),
-                            );
-                          },
-                          child: Text('+ ${source.count}'),
-                        ),
-                      ],
-                    ),
+                          StatusPill(
+                            label: 'Importing',
+                            dotColor: Palette.v7.gold,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      LinearProgressIndicator(
+                        value: _total <= 0 ? null : _done / _total,
+                        color: Palette.v7.gold,
+                        backgroundColor: Palette.v7.glassStrong,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _currentName.isEmpty
+                            ? '$_done of $_total files'
+                            : '$_done of $_total · $_currentName',
+                        style: AppTheme.mono(size: 12),
+                      ),
+                    ],
                   ),
                 ),
+              ],
+              if (result != null) ...<Widget>[
+                const SizedBox(height: 16),
+                GlassCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Text(
+                            result.allSucceeded
+                                ? 'Import complete'
+                                : 'Import finished with skips',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          StatusPill(
+                            label: result.allSucceeded ? 'Done' : 'Skips',
+                            dotColor: result.allSucceeded
+                                ? Palette.v7.green
+                                : Palette.v7.gold,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '${Format.count(_added)} added to your archive'
+                        '${result.imported.length > _added ? ' · ${Format.count(result.imported.length - _added)} already in your archive' : ''}'
+                        '${result.failures.isEmpty ? '' : ' · ${Format.count(result.failures.length)} skipped'}',
+                        style: AppTheme.mono(size: 12),
+                      ),
+                      for (final failure in result.failures)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            '${failure.name} — ${failure.reason}',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall!
+                                .copyWith(color: Palette.v7.muted),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+              const SizedBox(height: 16),
+              GlassCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      'Your archive',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '${Format.count(archive.items.length)} memories · '
+                      '${Format.count(state.indexed)} imported in total · '
+                      '0 bytes uploaded',
+                      style: AppTheme.mono(size: 12),
+                    ),
+                  ],
+                ),
+              ),
               const SizedBox(height: 8),
               Text(
-                'Demo build: import queues a simulated batch into the on-device index. Real photo-library access arrives in phase 2; nothing here uploads anything.',
+                'Imports are stored on this device only. Photos keep '
+                'their capture date and location when the file carries '
+                'them; videos get their length and size when first played.',
                 style: Theme.of(context)
                     .textTheme
                     .bodySmall!

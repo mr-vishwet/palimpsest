@@ -5,8 +5,10 @@ import '../core/theme.dart';
 import '../widgets/app_shell.dart';
 import '../widgets/common.dart';
 
-/// Upgrade prompt (m26 / w26): share this story? The link has to
-/// live somewhere. Shown when a guest tries to share.
+/// Upgrade prompt (m26 / w26): share this story? Links need a
+/// server to live on, and there is not one yet — so the screen says
+/// sharing arrives with the account backend instead of promising an
+/// account unlocks it today. Shown when a guest tries to share.
 class UpgradePromptScreen extends StatelessWidget {
   /// Creates the upgrade prompt screen.
   const UpgradePromptScreen({this.storyId, super.key});
@@ -28,15 +30,15 @@ class UpgradePromptScreen extends StatelessWidget {
           const Icon(Icons.link_outlined, size: 56, color: V7Colors.gold),
           const SizedBox(height: 20),
           Text(
-            'Share this story?',
+            'Sharing isn’t ready yet',
             style: Theme.of(context).textTheme.headlineSmall,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
             story == null
-                ? 'The link has to live somewhere — and that somewhere is your account.'
-                : 'To share “${story.title}”, the link has to live somewhere — and that somewhere is your account.',
+                ? 'A share link has to live on a server — and there isn’t one yet. An account doesn’t unlock sharing in this build; everything else works as a guest.'
+                : 'To share “${story.title}”, the link has to live on a server — and there isn’t one yet. An account doesn’t unlock sharing in this build; everything else works as a guest.',
             style: Theme.of(context)
                 .textTheme
                 .bodyLarge!
@@ -49,10 +51,15 @@ class UpgradePromptScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  'An account also unlocks',
+                  'When the account backend arrives',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 8),
+                const _Row(
+                  icon: Icons.link_outlined,
+                  text: 'Share links that open anywhere',
+                ),
+                const SizedBox(height: 6),
                 const _Row(
                   icon: Icons.cloud_upload_outlined,
                   text: 'Encrypted cloud backup — your key, your copy',
@@ -67,21 +74,20 @@ class UpgradePromptScreen extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           GradientButton(
-            label: 'Create an account',
+            label: 'Stay a guest',
             expanded: true,
-            onPressed: () =>
-                Navigator.of(context).pushNamed(Routes.createAccount),
+            onPressed: () => Navigator.of(context).pop(),
           ),
           const SizedBox(height: 8),
           OutlinedButton(
             onPressed: () =>
-                Navigator.of(context).pushNamed(Routes.signIn),
-            child: const Text('Sign in'),
+                Navigator.of(context).pushNamed(Routes.createAccount),
+            child: const Text('Create an account anyway'),
           ),
           const SizedBox(height: 8),
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Stay a guest'),
+            onPressed: () => Navigator.of(context).pushNamed(Routes.signIn),
+            child: const Text('Sign in'),
           ),
         ],
       ),

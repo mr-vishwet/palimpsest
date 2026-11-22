@@ -1,10 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:palimpsest/engine/exporter.dart';
-import 'package:palimpsest/services/demo_seed.dart';
+
+import 'test_fixtures.dart';
 
 void main() {
   group('Exporter', () {
-    final data = DemoSeed.build();
+    final data = TestFixtures.archive();
 
     test('re-exporting a story produces identical bytes', () {
       final story = data.stories.firstWhere((s) => s.id == 'cruise');

@@ -2,12 +2,16 @@ import 'package:material_ui/material_ui.dart';
 
 import '../core/theme.dart';
 import '../models/place.dart';
+import '../services/place_clustering.dart';
 
 /// The schematic map: places, not streets.
 ///
 /// A dotted warm-charcoal field with one pin per place, positioned by
 /// the place's schematic coordinates. Tapping a pin selects it; the
-/// parent shows the place's stories.
+/// parent shows the place's stories. Every pin is a real place — the
+/// parent only passes stored places and GPS clusters derived from
+/// imported photos, never invented ones. GPS places show their
+/// coordinates under the name.
 class SchematicMap extends StatelessWidget {
   /// Creates the schematic map.
   const SchematicMap({
@@ -124,6 +128,14 @@ class _MapPin extends StatelessWidget {
                 color: selected ? palette.dawn : palette.parchment,
               ),
             ),
+            if (place.hasGps)
+              Text(
+                PlaceClusterer.formatCoordinates(
+                  place.gpsLat!,
+                  place.gpsLng!,
+                ),
+                style: AppTheme.mono(size: 9, color: palette.muted),
+              ),
           ],
         ),
       ),

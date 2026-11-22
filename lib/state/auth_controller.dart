@@ -41,8 +41,9 @@ class AuthController extends ChangeNotifier {
   /// True when the guest archive has been migrated into the account.
   bool get migrated => archive.account.migrated;
 
-  /// Begins sign-in (or account creation) for [email]: the code is
-  /// "sent" and the verify screen collects it.
+  /// Begins sign-in (or account creation) for [email]: no email is
+  /// sent in v0.1 — the verify screen collects any 6-digit code and
+  /// verifies it locally.
   void beginSignIn(String email, {bool isNewAccount = false}) {
     pendingEmail = email.trim();
     pendingIsNewAccount = isNewAccount;
@@ -82,7 +83,8 @@ class AuthController extends ChangeNotifier {
     migrationProgress = 0;
     notifyListeners();
     var tick = 0;
-    _migrationTimer = Timer.periodic(const Duration(milliseconds: 150), (timer) {
+    _migrationTimer =
+        Timer.periodic(const Duration(milliseconds: 150), (timer) {
       tick++;
       migrationProgress = (tick / 28).clamp(0, 1).toDouble();
       if (tick >= 28) {
@@ -99,12 +101,15 @@ class AuthController extends ChangeNotifier {
     archive.updateAccount(
       archive.account.copyWith(
         migrated: true,
-        backupEnabled: true,
-        syncEnabled: true,
-        devices: 2,
-        backupUploadedGb: 6.1,
-        backupTotalGb: AppConstants.storageUsedGb,
-        lastBackupAt: DateTime.now(),
+        // No backend in this build: migration records the account
+        // locally and unlocks nothing yet — backup and sync stay
+        // off, no bytes are uploaded, and this device is the only
+        // one. (lastBackupAt stays null: there has been no backup.)
+        backupEnabled: false,
+        syncEnabled: false,
+        devices: 1,
+        backupUploadedGb: 0,
+        backupTotalGb: 0,
       ),
     );
     notifyListeners();
@@ -150,9 +155,9 @@ class AuthController extends ChangeNotifier {
   }
 
   /// Signs out. The local archive stays — signing out never deletes
-  /// local data. [deleteCloudCopy] also clears the recorded cloud
-  /// backup state (the cloud copy is removed; the local archive is
-  /// untouched).
+  /// local data. [deleteCloudCopy] also clears the recorded
+  /// connected sources; there is no cloud copy in this build, so
+  /// nothing is deleted from any server.
   void signOut({bool deleteCloudCopy = false}) {
     archive.updateAccount(
       AccountState(

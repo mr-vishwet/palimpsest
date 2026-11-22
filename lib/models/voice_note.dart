@@ -1,9 +1,16 @@
 /// A voice note: recorded audio with a transcript.
 ///
-/// The transcript makes the note searchable — asking what someone said
+/// The audio bytes live in the [BlobStore] under [blobId]; the
+/// transcript makes the note searchable — asking what someone said
 /// about the drive can answer from the transcript. Transcription runs
-/// locally when enabled in Settings; in v0.1 the seeded notes carry
-/// their transcripts as demo content.
+/// locally when enabled in Settings; notes recorded in-app start with
+/// an empty transcript until transcription lands.
+///
+/// The waveform is real peaks computed from the recording (see
+/// `WaveformPeaks`): WAV bytes give exact peaks, anything else falls
+/// back to the amplitude samples taken while recording. A note with
+/// no stored audio has an empty waveform, and the player says so
+/// honestly instead of faking playback.
 class VoiceNote {
   /// Creates a voice note.
   const VoiceNote({
@@ -15,7 +22,9 @@ class VoiceNote {
     required this.waveform,
     this.storyId,
     this.attachedMemoryId,
-    this.isDemo = true,
+    this.blobId,
+    this.mimeType,
+    this.isDemo = false,
   });
 
   /// Rebuilds a voice note from stored JSON.
@@ -29,10 +38,14 @@ class VoiceNote {
             (json['waveform'] as List<dynamic>).map((v) => (v as num).toDouble()).toList(),
         storyId: json['storyId'] as String?,
         attachedMemoryId: json['attachedMemoryId'] as String?,
-        isDemo: json['isDemo'] as bool? ?? true,
+        blobId: json['blobId'] as String?,
+        mimeType: json['mimeType'] as String?,
+        isDemo: json['isDemo'] as bool? ?? false,
       );
 
-  /// Stable id, e.g. `voice-porch`.
+  /// Stable id, e.g. `voice-porch`. A voice note shares its id with
+  /// its [MemoryItem] (kind `voiceNote`), so the media detail screen
+  /// can open the note from the item and back.
   final String id;
 
   /// Note title, e.g. "Dad, on the porch".
@@ -41,13 +54,14 @@ class VoiceNote {
   /// Length in seconds.
   final int durationSeconds;
 
-  /// The searchable transcript.
+  /// The searchable transcript. Empty until transcription lands.
   final String transcript;
 
   /// When the note was recorded.
   final DateTime takenAt;
 
-  /// Deterministic waveform bar heights (0–1) for the waveform view.
+  /// Real waveform bar heights (0–1), computed from the recording.
+  /// Empty when the note has no audio to draw.
   final List<double> waveform;
 
   /// Story the note belongs to, if any.
@@ -56,8 +70,19 @@ class VoiceNote {
   /// Memory the note is attached to, if any.
   final String? attachedMemoryId;
 
-  /// True for seeded demo-library content.
+  /// BlobStore key for the recorded audio bytes. Null for notes
+  /// with no stored audio.
+  final String? blobId;
+
+  /// MIME type of the recorded audio, e.g. `audio/wav`.
+  final String? mimeType;
+
+  /// True for demo-media content (loaded from the bundled demo set).
+  /// Real imports and user-created content are false.
   final bool isDemo;
+
+  /// True when this note has recorded audio to play.
+  bool get hasAudio => blobId != null;
 
   /// Serializes the voice note for local storage.
   Map<String, Object?> toJson() => <String, Object?>{
@@ -69,35 +94,30 @@ class VoiceNote {
         'waveform': waveform,
         'storyId': storyId,
         'attachedMemoryId': attachedMemoryId,
+        'blobId': blobId,
+        'mimeType': mimeType,
         'isDemo': isDemo,
       };
 
   /// Returns a copy with the given fields replaced.
-  VoiceNote copyWith({String? storyId, String? attachedMemoryId}) => VoiceNote(
+  VoiceNote copyWith({
+    String? storyId,
+    String? attachedMemoryId,
+    List<double>? waveform,
+    String? blobId,
+    String? mimeType,
+  }) =>
+      VoiceNote(
         id: id,
         title: title,
         durationSeconds: durationSeconds,
         transcript: transcript,
         takenAt: takenAt,
-        waveform: waveform,
+        waveform: waveform ?? this.waveform,
         storyId: storyId ?? this.storyId,
         attachedMemoryId: attachedMemoryId ?? this.attachedMemoryId,
+        blobId: blobId ?? this.blobId,
+        mimeType: mimeType ?? this.mimeType,
         isDemo: isDemo,
       );
-
-  /// Deterministic pseudo-random waveform heights from a seed string.
-  /// Pure and stable: the same seed always draws the same waveform.
-  static List<double> waveformFor(String seed, {int bars = 48}) {
-    var hash = 0;
-    for (final unit in seed.codeUnits) {
-      hash = (hash * 31 + unit) & 0x7fffffff;
-    }
-    final heights = <double>[];
-    for (var i = 0; i < bars; i++) {
-      hash = (hash * 1103515245 + 12345) & 0x7fffffff;
-      final envelope = 0.55 + 0.45 * (1 - (i - bars / 2).abs() / (bars / 2));
-      heights.add((0.2 + 0.8 * ((hash % 100) / 100)) * envelope);
-    }
-    return heights;
-  }
 }

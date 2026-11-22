@@ -9,8 +9,9 @@ import '../widgets/app_shell.dart';
 import '../widgets/common.dart';
 import '../widgets/story_card.dart';
 
-/// Timeline (m10 / w10): 35+ years, four stories, and the photo box
-/// waiting to be scanned. Newest first.
+/// Timeline (m10 / w10): the archive's years, newest first, with
+/// the photo box waiting to be scanned. The span is derived from the
+/// real items — an empty archive shows an empty state, not a span.
 class TimelineScreen extends StatelessWidget {
   /// Creates the timeline screen.
   const TimelineScreen({super.key});
@@ -35,18 +36,33 @@ class TimelineScreen extends StatelessWidget {
       listenable: archive,
       builder: (context, _) {
         final years = TimelineBuilder.build(archive.items, archive.stories);
+        final span = archiveYearSpan(archive.items);
         final body = SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text('35+ years, newest first', style: AppTheme.kicker()),
+              if (span != null)
+                Text(
+                  '${span.years} ${span.years == 1 ? 'year' : 'years'}, newest first',
+                  style: AppTheme.kicker(),
+                ),
               const SizedBox(height: 6),
               Text(
                 'Timeline',
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 16),
+              if (years.isEmpty)
+                EmptyState(
+                  icon: Icons.timeline_outlined,
+                  title: 'No timeline yet',
+                  body: 'Import photos and videos and the years will fill in '
+                      'here, newest first.',
+                  actionLabel: 'Import photos & videos',
+                  onAction: () =>
+                      Navigator.of(context).pushNamed(Routes.import),
+                ),
               for (final year in years) ...<Widget>[
                 Row(
                   children: <Widget>[
@@ -95,8 +111,7 @@ class TimelineScreen extends StatelessWidget {
                           Expanded(
                             child: Text(
                               item.title,
-                              style:
-                                  Theme.of(context).textTheme.titleSmall,
+                              style: Theme.of(context).textTheme.titleSmall,
                             ),
                           ),
                           Text(
@@ -118,8 +133,7 @@ class TimelineScreen extends StatelessWidget {
                 const SizedBox(height: 16),
               ],
               GlassCard(
-                onTap: () =>
-                    Navigator.of(context).pushNamed(Routes.import),
+                onTap: () => Navigator.of(context).pushNamed(Routes.import),
                 borderColor: Palette.v7.gold.withValues(alpha: 0.5),
                 child: Row(
                   children: <Widget>[
@@ -134,8 +148,7 @@ class TimelineScreen extends StatelessWidget {
                         children: <Widget>[
                           Text(
                             'The photo box',
-                            style:
-                                Theme.of(context).textTheme.titleMedium,
+                            style: Theme.of(context).textTheme.titleMedium,
                           ),
                           const SizedBox(height: 2),
                           Text(

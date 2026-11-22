@@ -1,28 +1,36 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:palimpsest/core/constants.dart';
 import 'package:palimpsest/engine/archive_index.dart';
 import 'package:palimpsest/engine/reconstructor.dart';
-import 'package:palimpsest/services/demo_seed.dart';
+
+import 'test_fixtures.dart';
 
 void main() {
   group('Reconstructor', () {
-    final data = DemoSeed.build();
+    final data = TestFixtures.archive();
 
-    test('canonical question rebuilds the project weekend', () {
+    test('a question matching many items returns them all', () {
+      // No special case: 'project weekend' matches the 14 items
+      // tagged `project-weekend` through the plain index (partial
+      // tag matches plus the weekend bonus, score 5 each) — and
+      // the `weekend` token also matches every other item taken on
+      // a Saturday or Sunday (score 1 each, flagged as weak).
       final moment = Reconstructor.reconstruct(
-        AppConstants.canonicalAsk,
+        'project weekend',
         data,
         now: DateTime(2026, 11, 21, 12, 40),
       );
-      expect(moment.title, 'The weekend the project started');
-      expect(moment.itemIds, hasLength(14));
+      expect(moment.title, 'Project weekend');
+      expect(moment.itemIds, hasLength(26));
       expect(moment.itemIds, contains('pw-01'));
       expect(moment.itemIds, contains('pw-08'));
+      expect(moment.flaggedIds, hasLength(12));
+      expect(moment.flaggedIds, contains('moto-03'));
+      expect(moment.flaggedIds, isNot(contains('pw-01')));
     });
 
     test('items are in chronological order', () {
       final moment = Reconstructor.reconstruct(
-        AppConstants.canonicalAsk,
+        'project weekend',
         data,
       );
       final items = moment.itemIds.map((id) => data.items.firstWhere((i) => i.id == id)).toList();
@@ -35,20 +43,22 @@ void main() {
       }
     });
 
-    test('exactly two items look wrong', () {
-      final moment = Reconstructor.reconstruct(
-        AppConstants.canonicalAsk,
-        data,
-      );
+    test('weak matches are flagged as possibly wrong', () {
+      // 'moto' matches the two Moto Trip items only via the story
+      // title (score 1 each) — below the weak threshold, so both
+      // are flagged as looking wrong.
+      final moment = Reconstructor.reconstruct('moto', data);
+      expect(moment.itemIds, hasLength(2));
       expect(moment.flaggedIds, hasLength(2));
-      expect(moment.flaggedIds, containsAll(['pw-wrong-1', 'pw-wrong-2']));
+      expect(moment.flaggedIds, containsAll(['moto-03', 'moto-01']));
     });
 
     test('anchor finds are the sketch, the voice note and the cut', () {
       final moment = Reconstructor.reconstruct(
-        AppConstants.canonicalAsk,
+        'sketch voice cut',
         data,
       );
+      expect(moment.itemIds, hasLength(3));
       final anchors = Reconstructor.anchorFinds(moment, data.items);
       expect(
         anchors.map((a) => a.label),
@@ -62,29 +72,29 @@ void main() {
 
     test('every item carries a reason', () {
       final moment = Reconstructor.reconstruct(
-        AppConstants.canonicalAsk,
+        'sketch voice cut',
         data,
       );
       for (final id in moment.itemIds) {
         expect(moment.reasons[id], isNotEmpty);
       }
-      expect(moment.reasonFor('pw-01'), 'First sketch — Saturday 09:12');
+      expect(moment.reasonFor('pw-01'), "Tagged 'sketch'");
     });
 
     test('corrections exclude removed items next time', () {
-      final normalized = ArchiveIndex.normalize(AppConstants.canonicalAsk);
+      final normalized = ArchiveIndex.normalize('project weekend');
       final corrected = data.copyWith(
         corrections: <String, List<String>>{
-          normalized: ['pw-02', 'pw-wrong-1'],
+          normalized: ['pw-02', 'pw-08'],
         },
       );
       final moment = Reconstructor.reconstruct(
-        AppConstants.canonicalAsk,
+        'project weekend',
         corrected,
       );
-      expect(moment.itemIds, hasLength(12));
+      expect(moment.itemIds, hasLength(24));
       expect(moment.itemIds, isNot(contains('pw-02')));
-      expect(moment.itemIds, isNot(contains('pw-wrong-1')));
+      expect(moment.itemIds, isNot(contains('pw-08')));
     });
 
     test('a plain question searches the index', () {

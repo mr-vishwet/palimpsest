@@ -6,8 +6,9 @@ import '../widgets/app_shell.dart';
 import '../widgets/common.dart';
 
 /// Create account (m24 / w24): one account for backup, sync, and
-/// shared links. Verified with a 6-digit code, then the guest
-/// archive migrates in.
+/// shared links — once the backend exists. Verified with a 6-digit
+/// code, then the guest archive is counted in. In this build the
+/// account is recorded locally and unlocks nothing yet.
 class CreateAccountScreen extends StatefulWidget {
   /// Creates the create-account screen.
   const CreateAccountScreen({super.key});
@@ -65,7 +66,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text('One account for backup, sync, and shared links',
+          Text(
+              'One account for backup, sync, and shared links — when the backend exists',
               style: AppTheme.kicker()),
           const SizedBox(height: 6),
           Text(
@@ -125,7 +127,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           ],
           const SizedBox(height: 8),
           Text(
-            'Demo build: the account is recorded locally and the password is not sent anywhere. The code step verifies the email on-device.',
+            'Demo build: the account is recorded locally and the password is not sent anywhere. The code step verifies the email on-device — and an account doesn’t unlock anything yet.',
             style: Theme.of(context)
                 .textTheme
                 .bodySmall!
@@ -140,8 +142,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           const SizedBox(height: 16),
           Center(
             child: TextButton(
-              onPressed: () =>
-                  Navigator.of(context).pushNamed(Routes.signIn),
+              onPressed: () => Navigator.of(context).pushNamed(Routes.signIn),
               child: const Text('Already have an account? Sign in'),
             ),
           ),

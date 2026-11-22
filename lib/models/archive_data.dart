@@ -86,10 +86,8 @@ class ImportState {
 
 /// The whole archive as one versioned document.
 ///
-/// v0.1 persists this as JSON in shared_preferences (see
-/// [ArchiveStore]); the shape is deliberately store-shaped so a
-/// Drift/SQLite store can replace the persistence layer without
-/// changing the models.
+/// Persisted in Drift/SQLite (see [ArchiveStore]); v1 documents
+/// stored as JSON in SharedPreferences are migrated on load.
 class ArchiveData {
   /// Creates archive data.
   const ArchiveData({
@@ -108,6 +106,29 @@ class ArchiveData {
     required this.importState,
     required this.onboardingSeen,
   });
+
+  /// An empty archive: what a first run starts from. Version 2 is the
+  /// Drift-backed format; v1 documents are migrated on load.
+  factory ArchiveData.empty() => ArchiveData(
+        version: 2,
+        stories: <Story>[],
+        items: <MemoryItem>[],
+        layers: <MemoryLayer>[],
+        people: <Person>[],
+        places: <Place>[],
+        voiceNotes: <VoiceNote>[],
+        shareLinks: <ShareLink>[],
+        moments: <ReconstructedMoment>[],
+        corrections: <String, List<String>>{},
+        account: AccountState.guest(),
+        settings: const ArchiveSettings(),
+        importState: const ImportState(
+          total: 0,
+          indexed: 0,
+          status: ImportStatus.idle,
+        ),
+        onboardingSeen: false,
+      );
 
   /// Rebuilds archive data from stored JSON.
   factory ArchiveData.fromJson(Map<String, Object?> json) => ArchiveData(

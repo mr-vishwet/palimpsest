@@ -10,7 +10,7 @@ class Person {
     required this.photoCount,
     required this.colorKey,
     this.name,
-    this.isDemo = true,
+    this.isDemo = false,
   });
 
   /// Rebuilds a person from stored JSON.
@@ -19,7 +19,7 @@ class Person {
         photoCount: json['photoCount'] as int,
         colorKey: json['colorKey'] as String,
         name: json['name'] as String?,
-        isDemo: json['isDemo'] as bool? ?? true,
+        isDemo: json['isDemo'] as bool? ?? false,
       );
 
   /// Stable id, e.g. `person-dad`.
@@ -34,7 +34,8 @@ class Person {
   /// The name the user gave this group, or null when unnamed.
   final String? name;
 
-  /// True for seeded demo-library content.
+  /// True for demo-media content (loaded from the bundled demo set).
+  /// Real imports and user-created content are false.
   final bool isDemo;
 
   /// True when the user has named this group.

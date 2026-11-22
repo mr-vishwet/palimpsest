@@ -1,10 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:palimpsest/engine/timeline.dart';
-import 'package:palimpsest/services/demo_seed.dart';
+
+import 'test_fixtures.dart';
 
 void main() {
   group('TimelineBuilder', () {
-    final data = DemoSeed.build();
+    final data = TestFixtures.archive();
 
     test('years are newest first', () {
       final years = TimelineBuilder.build(data.items, data.stories);

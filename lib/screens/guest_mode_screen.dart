@@ -6,7 +6,8 @@ import '../widgets/app_shell.dart';
 import '../widgets/common.dart';
 
 /// Guest mode (m22 / w22): what works as a guest, and the three
-/// things that need an account.
+/// things that will need an account once the backend exists. In this
+/// build an account unlocks nothing yet — the screen says so.
 class GuestModeScreen extends StatelessWidget {
   /// Creates the guest-mode screen.
   const GuestModeScreen({super.key});
@@ -50,7 +51,7 @@ class GuestModeScreen extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'The archive on this device is fully yours as a guest. Three things need an account — everything else just works.',
+            'The archive on this device is fully yours as a guest. Three things will need an account once the backend exists — in this build, an account doesn’t unlock anything yet.',
             style: Theme.of(context)
                 .textTheme
                 .bodyLarge!
@@ -81,7 +82,8 @@ class GuestModeScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Text('Needs an account', style: AppTheme.kicker()),
+          Text('Needs an account — when the backend arrives',
+              style: AppTheme.kicker()),
           const SizedBox(height: 8),
           for (final need in needsAccount)
             Padding(
@@ -120,8 +122,7 @@ class GuestModeScreen extends StatelessWidget {
           const SizedBox(height: 8),
           Center(
             child: TextButton(
-              onPressed: () =>
-                  Navigator.of(context).pushNamed(Routes.signIn),
+              onPressed: () => Navigator.of(context).pushNamed(Routes.signIn),
               child: const Text('I already have an account'),
             ),
           ),

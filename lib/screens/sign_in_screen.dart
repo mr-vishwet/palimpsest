@@ -5,12 +5,13 @@ import '../core/theme.dart';
 import '../widgets/app_shell.dart';
 import '../widgets/common.dart';
 
-/// Sign in (m23 / w23): your backup and your shared links live here.
+/// Sign in (m23 / w23): the account is recorded on this device.
 ///
-/// v0.1 has no backend: sign-in sends a code to the email and the
-/// code is verified locally (any 6-digit code works in the demo).
-/// The password field is collected for the future account backend
-/// and is never sent anywhere in v0.1 — the screen says so.
+/// v0.1 has no backend: sign-in sends no email and the code is
+/// verified locally (any 6-digit code works in the demo). The
+/// password field is collected for the future account backend and
+/// is never sent anywhere in v0.1 — the screen says so. An account
+/// unlocks nothing yet.
 class SignInScreen extends StatefulWidget {
   /// Creates the sign-in screen.
   const SignInScreen({super.key});
@@ -76,8 +77,7 @@ class _SignInScreenState extends State<SignInScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text('Your backup and your shared links live here',
-              style: AppTheme.kicker()),
+          Text('An account, recorded on this device', style: AppTheme.kicker()),
           const SizedBox(height: 6),
           Text(
             'Sign in',
@@ -110,7 +110,7 @@ class _SignInScreenState extends State<SignInScreen> {
           ],
           const SizedBox(height: 8),
           Text(
-            'Demo build: the password is not sent anywhere. A 6-digit code verifies the email locally.',
+            'Demo build: the password is not sent anywhere, and no email is sent. A 6-digit code verifies the email locally — and an account doesn’t unlock anything yet.',
             style: Theme.of(context)
                 .textTheme
                 .bodySmall!

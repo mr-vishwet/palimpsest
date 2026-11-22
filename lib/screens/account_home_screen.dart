@@ -5,8 +5,10 @@ import '../core/theme.dart';
 import '../widgets/app_shell.dart';
 import '../widgets/common.dart';
 
-/// Account home (m28 / w28): backed up, synced, two shared links.
-/// Guests see what an account unlocks instead.
+/// Account home (m28 / w28): what the account is, honestly — in
+/// this build an account unlocks nothing yet; backup, sync and
+/// sharing arrive with the account backend. Guests see that plainly
+/// instead of a promise.
 class AccountHomeScreen extends StatelessWidget {
   /// Creates the account home screen.
   const AccountHomeScreen({super.key});
@@ -46,7 +48,7 @@ class AccountHomeScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'An account unlocks share links, encrypted cloud backup and sync — and nothing else changes.',
+                        'An account doesn’t unlock anything yet — share links, encrypted cloud backup and sync arrive with the account backend. Everything works as a guest.',
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 12),
@@ -59,8 +61,8 @@ class AccountHomeScreen extends StatelessWidget {
                       const SizedBox(height: 8),
                       Center(
                         child: TextButton(
-                          onPressed: () => Navigator.of(context)
-                              .pushNamed(Routes.signIn),
+                          onPressed: () =>
+                              Navigator.of(context).pushNamed(Routes.signIn),
                           child: const Text('Sign in'),
                         ),
                       ),
@@ -85,12 +87,13 @@ class AccountHomeScreen extends StatelessWidget {
               ] else ...<Widget>[
                 GlassCard(
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       _AccountRow(
                         icon: Icons.cloud_upload_outlined,
                         title: 'Backup',
                         subtitle: account.backupEnabled
-                            ? 'On · ${account.backupUploadedGb.toStringAsFixed(1)} of ${account.backupTotalGb.toStringAsFixed(1)} GB'
+                            ? 'On · nothing uploaded yet — no backup server in this build'
                             : 'Off',
                         trailing: Switch(
                           value: account.backupEnabled,
@@ -102,12 +105,20 @@ class AccountHomeScreen extends StatelessWidget {
                         icon: Icons.sync_outlined,
                         title: 'Sync',
                         subtitle: account.syncEnabled
-                            ? 'On · ${account.devices} devices'
+                            ? 'On · this device only — no sync server in this build'
                             : 'Off',
                         trailing: Switch(
                           value: account.syncEnabled,
                           onChanged: auth.setSync,
                         ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Backup and sync are recorded locally in this build — there is no server yet, so nothing is uploaded or synced.',
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall!
+                            .copyWith(color: Palette.v7.muted),
                       ),
                     ],
                   ),
@@ -120,7 +131,7 @@ class AccountHomeScreen extends StatelessWidget {
                 const SizedBox(height: 8),
                 if (links.isEmpty)
                   const Text(
-                    'No shared links yet — open a story and share it.',
+                    'No shared links yet — links are recorded on this device only, and there is no server yet, so a link can’t be opened by anyone else.',
                     style: TextStyle(color: V7Colors.muted),
                   )
                 else
@@ -142,9 +153,8 @@ class AccountHomeScreen extends StatelessWidget {
                                   Text(
                                     archive.storyById(link.storyId)?.title ??
                                         'Story',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleSmall,
+                                    style:
+                                        Theme.of(context).textTheme.titleSmall,
                                   ),
                                   Text(
                                     link.isExpired
@@ -156,14 +166,21 @@ class AccountHomeScreen extends StatelessWidget {
                               ),
                             ),
                             TextButton(
-                              onPressed: () =>
-                                  archive.revokeShareLink(link.id),
+                              onPressed: () => archive.revokeShareLink(link.id),
                               child: const Text('Revoke'),
                             ),
                           ],
                         ),
                       ),
                     ),
+                if (links.isNotEmpty)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 4),
+                    child: Text(
+                      'Links are recorded on this device only — there is no server yet, so nobody can open one.',
+                      style: TextStyle(color: V7Colors.muted),
+                    ),
+                  ),
                 const SizedBox(height: 16),
                 GlassCard(
                   onTap: () =>
@@ -179,8 +196,7 @@ class AccountHomeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 GlassCard(
-                  onTap: () =>
-                      Navigator.of(context).pushNamed(Routes.signOut),
+                  onTap: () => Navigator.of(context).pushNamed(Routes.signOut),
                   child: const Row(
                     children: <Widget>[
                       Icon(Icons.logout, color: V7Colors.danger),
@@ -193,8 +209,7 @@ class AccountHomeScreen extends StatelessWidget {
               ],
               const SizedBox(height: 16),
               GlassCard(
-                onTap: () =>
-                    Navigator.of(context).pushNamed(Routes.settings),
+                onTap: () => Navigator.of(context).pushNamed(Routes.settings),
                 child: const Row(
                   children: <Widget>[
                     Icon(Icons.settings_outlined, color: V7Colors.gold),
@@ -206,8 +221,7 @@ class AccountHomeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               GlassCard(
-                onTap: () =>
-                    Navigator.of(context).pushNamed(Routes.offline),
+                onTap: () => Navigator.of(context).pushNamed(Routes.offline),
                 child: const Row(
                   children: <Widget>[
                     Icon(Icons.wifi_off_outlined, color: V7Colors.gold),

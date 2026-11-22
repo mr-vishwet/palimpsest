@@ -7,9 +7,9 @@ import '../core/theme.dart';
 import '../widgets/app_shell.dart';
 import '../widgets/common.dart';
 
-/// Verify (m25 / w25): a 6-digit code, then the archive is checked
-/// item by item. In v0.1 any 6-digit code verifies locally — the demo
-/// code from the spec is 428195.
+/// Verify (m25 / w25): a 6-digit code, then the archive is counted
+/// item by item. In v0.1 no email is sent and any 6-digit code
+/// verifies locally — the demo code from the spec is 428195.
 class VerifyScreen extends StatefulWidget {
   /// Creates the verify screen.
   const VerifyScreen({required this.email, super.key});
@@ -56,12 +56,15 @@ class _VerifyScreenState extends State<VerifyScreen> {
   @override
   Widget build(BuildContext context) {
     const palette = Palette.v7;
+    final archive = AppScope.of(context).archive;
+    final photos = ArchiveCounts.photos(archive.items);
+    final videos = ArchiveCounts.videos(archive.items);
     final body = SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text('A 6-digit code, then the check', style: AppTheme.kicker()),
+          Text('A 6-digit code, then the count', style: AppTheme.kicker()),
           const SizedBox(height: 6),
           Text(
             'Verify',
@@ -69,7 +72,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            'We sent a code to ${widget.email}. It works for ${AppConstants.verifyCodeValidityMinutes} minutes.',
+            'Enter any 6-digit code for ${widget.email} — no email is sent in this build. The code step verifies the email on-device.',
             style: Theme.of(context)
                 .textTheme
                 .bodyLarge!
@@ -116,7 +119,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text(
-                      'New code sent — demo build, any 6-digit code works',
+                      'No email is sent in this build — any 6-digit code works',
                     ),
                   ),
                 );
@@ -126,7 +129,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'After the code, the archive is checked item by item — 4 stories, 5,012 photos, 143 videos, 9 voice notes — and nothing is left behind.',
+            'After the code, the archive is counted item by item — ${archive.stories.length} stories, $photos photos, $videos videos, ${archive.voiceNotes.length} voice notes — and nothing is uploaded.',
             style: Theme.of(context)
                 .textTheme
                 .bodySmall!

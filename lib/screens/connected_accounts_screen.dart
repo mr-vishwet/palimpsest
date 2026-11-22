@@ -97,7 +97,7 @@ class ConnectedAccountsScreen extends StatelessWidget {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                    '${source.name} connected — imports pull in only',
+                                    '${source.name} recorded locally — real connection arrives with the account backend',
                                   ),
                                 ),
                               );

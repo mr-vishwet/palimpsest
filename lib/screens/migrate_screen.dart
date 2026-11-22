@@ -1,15 +1,15 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../core/constants.dart';
 import '../core/format.dart';
 import '../core/routes.dart';
 import '../core/theme.dart';
 import '../widgets/app_shell.dart';
 import '../widgets/common.dart';
 
-/// Migrate (m27 / w27): 4 stories, 5,012 photos, 143 videos, 9 voice
-/// notes — 0 left behind. The guest archive is checked item by item,
-/// then the first backup begins.
+/// Migrate (m27 / w27): the guest archive is counted item by item
+/// as the account is recorded locally. Nothing moves anywhere and
+/// nothing is uploaded — there is no server yet, and the local copy
+/// stays the only copy.
 class MigrateScreen extends StatefulWidget {
   /// Creates the migrate screen.
   const MigrateScreen({super.key});
@@ -36,13 +36,14 @@ class _MigrateScreenState extends State<MigrateScreen> {
       builder: (context, _) {
         final progress = auth.migrationProgress;
         final done = !auth.migrationRunning && progress >= 1;
-        final account = archive.account;
+        final photos = ArchiveCounts.photos(archive.items);
+        final videos = ArchiveCounts.videos(archive.items);
 
         final checks = <({String label, double at})>[
-          (label: '4 stories', at: 0.2),
-          (label: '5,012 photos', at: 0.45),
-          (label: '143 videos', at: 0.65),
-          (label: '9 voice notes', at: 0.85),
+          (label: '${archive.stories.length} stories', at: 0.2),
+          (label: '${Format.count(photos)} photos', at: 0.45),
+          (label: '$videos videos', at: 0.65),
+          (label: '${archive.voiceNotes.length} voice notes', at: 0.85),
         ];
 
         final body = SingleChildScrollView(
@@ -50,15 +51,15 @@ class _MigrateScreenState extends State<MigrateScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text('0 left behind', style: AppTheme.kicker()),
+              Text('Nothing leaves this device', style: AppTheme.kicker()),
               const SizedBox(height: 6),
               Text(
-                'Moving your archive in',
+                'Welcome to your account',
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 6),
               Text(
-                'Every item is checked as it moves into your account. Nothing is left behind — and the local copy stays put.',
+                'Your archive is counted item by item as the account is recorded — locally, on this device. Nothing is uploaded, and the local copy stays the only copy.',
                 style: Theme.of(context)
                     .textTheme
                     .bodyLarge!
@@ -69,7 +70,7 @@ class _MigrateScreenState extends State<MigrateScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Text('Checking the archive', style: AppTheme.kicker()),
+                    Text('Counting the archive', style: AppTheme.kicker()),
                     const SizedBox(height: 8),
                     for (final check in checks)
                       Padding(
@@ -98,7 +99,7 @@ class _MigrateScreenState extends State<MigrateScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '${(progress * 100).round()}% · ${done ? 'complete' : 'checking…'}',
+                      '${(progress * 100).round()}% · ${done ? 'complete' : 'counting…'}',
                       style: AppTheme.mono(size: 11),
                     ),
                   ],
@@ -113,19 +114,13 @@ class _MigrateScreenState extends State<MigrateScreen> {
                     const SizedBox(height: 8),
                     Text(
                       done
-                          ? '${account.backupUploadedGb.toStringAsFixed(1)} of ${account.backupTotalGb.toStringAsFixed(1)} GB backed up (${(account.backupProgress * 100).round()}%)'
-                          : 'Starts when the check finishes — ${Format.storage(AppConstants.storageUsedGb, AppConstants.storageTotalGb)} to back up.',
+                          ? 'Nothing uploaded — there is no backup server in this build. Encrypted cloud backup arrives with the account backend; until then, your archive lives only on this device.'
+                          : 'Backup arrives with the account backend — nothing will be uploaded in this build.',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 8),
-                    LinearProgressIndicator(
-                      value: done ? account.backupProgress : 0,
-                      color: Palette.v7.green,
-                      backgroundColor: Palette.v7.glassStrong,
-                    ),
-                    const SizedBox(height: 4),
                     Text(
-                      'Encrypted with your key — the backup is your copy.',
+                      '0 bytes uploaded · local-first, always',
                       style: AppTheme.mono(size: 11),
                     ),
                   ],

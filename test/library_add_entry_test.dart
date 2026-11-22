@@ -5,12 +5,13 @@ import 'package:palimpsest/core/routes.dart';
 import 'package:palimpsest/screens/import_screen.dart';
 import 'package:palimpsest/screens/library_screen.dart';
 import 'package:palimpsest/services/archive_store.dart';
-import 'package:palimpsest/services/demo_seed.dart';
 import 'package:palimpsest/state/archive_controller.dart';
 import 'package:palimpsest/state/ask_controller.dart';
 import 'package:palimpsest/state/auth_controller.dart';
 import 'package:palimpsest/widgets/app_shell.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'test_fixtures.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -25,7 +26,7 @@ void main() {
 
       final archive = ArchiveController(
         store: ArchiveStore(),
-        initialData: DemoSeed.build(),
+        initialData: TestFixtures.archive(),
       );
       addTearDown(archive.dispose);
       final ask = AskController(archive: archive);
@@ -66,8 +67,9 @@ void main() {
       expect(addButton, findsOneWidget);
 
       await tester.tap(addButton);
-      // The Import screen runs a periodic indexing timer, so settle
-      // with plain pumps instead of pumpAndSettle.
+      // Plain pumps instead of pumpAndSettle: screens with a
+      // MemoryOrb run a repeating animation, so the frame queue
+      // never settles.
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
       expect(find.byType(ImportScreen), findsOneWidget);

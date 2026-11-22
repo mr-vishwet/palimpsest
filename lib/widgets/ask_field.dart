@@ -18,7 +18,7 @@ class AskField extends StatefulWidget {
   /// Called with the question when the user asks.
   final void Function(String question) onAsk;
 
-  /// Initial text (e.g. the canonical question on the Ask screen).
+  /// Initial text for the field, if any.
   final String initialValue;
 
   /// Whether to focus the field on first build.

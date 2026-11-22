@@ -35,7 +35,7 @@ class MemoryLayer {
     required this.newValue,
     required this.createdAt,
     this.author = 'You',
-    this.isDemo = true,
+    this.isDemo = false,
   });
 
   /// Rebuilds a layer from stored JSON.
@@ -48,7 +48,7 @@ class MemoryLayer {
         newValue: json['newValue'] as String,
         createdAt: DateTime.parse(json['createdAt'] as String),
         author: json['author'] as String? ?? 'You',
-        isDemo: json['isDemo'] as bool? ?? true,
+        isDemo: json['isDemo'] as bool? ?? false,
       );
 
   /// Stable id, e.g. `layer-frame-042-1`.
@@ -75,7 +75,8 @@ class MemoryLayer {
   /// Who wrote the layer.
   final String author;
 
-  /// True for seeded demo-library content.
+  /// True for demo-media content (loaded from the bundled demo set).
+  /// Real imports and user-created content are false.
   final bool isDemo;
 
   /// Serializes the layer for local storage.

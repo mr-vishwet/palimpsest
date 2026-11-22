@@ -2,10 +2,12 @@ import 'package:material_ui/material_ui.dart';
 
 import '../core/theme.dart';
 
-/// A waveform drawn from deterministic bar heights, with a playhead.
+/// A waveform drawn from real peak heights, with a playhead.
 ///
 /// Tapping a bar seeks to that position (the parent owns playback
-/// state). Bars behind the playhead render gold; ahead, muted.
+/// state). Bars behind the playhead render gold; ahead, muted. An
+/// empty heights list means the note has no audio to draw — the
+/// widget says so instead of inventing bars.
 class Waveform extends StatelessWidget {
   /// Creates a waveform.
   const Waveform({
@@ -16,7 +18,8 @@ class Waveform extends StatelessWidget {
     super.key,
   });
 
-  /// Bar heights, 0–1.
+  /// Bar heights, 0–1, computed from the recorded audio. Empty when
+  /// the note has no audio.
   final List<double> heights;
 
   /// Playback progress, 0–1.
@@ -31,6 +34,18 @@ class Waveform extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const palette = Palette.v7;
+    if (heights.isEmpty) {
+      return SizedBox(
+        height: height,
+        child: Center(
+          child: Text(
+            'No waveform — this note has no recording',
+            style: AppTheme.mono(size: 11, color: palette.muted),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
     return GestureDetector(
       onTapDown: onSeek == null
           ? null

@@ -148,11 +148,24 @@ class _LibraryScreenState extends State<LibraryScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                '${items.length} frames in the demo library',
+                '${items.length} frames',
                 style: AppTheme.mono(size: 12),
               ),
               const SizedBox(height: 12),
-              if (items.isEmpty)
+              if (archive.items.isEmpty)
+                // A truly empty library: nothing has been imported
+                // yet, so the honest state is an invitation to
+                // import — not a filter hint.
+                EmptyState(
+                  icon: Icons.photo_library_outlined,
+                  title: 'Your library is empty',
+                  body: 'Import photos and videos and they will appear here — '
+                      'searchable, on this device, nothing uploaded.',
+                  actionLabel: 'Import photos & videos',
+                  onAction: () =>
+                      Navigator.of(context).pushNamed(Routes.import),
+                )
+              else if (items.isEmpty)
                 const EmptyState(
                   icon: Icons.photo_library_outlined,
                   title: 'Nothing here yet',
@@ -170,15 +183,13 @@ class _LibraryScreenState extends State<LibraryScreen> {
           // The capture entry point: always visible, on every visit.
           // There is no separate capture screen in v0.1 — adding
           // photos and videos goes through the Import screen, which
-          // is the designed capture flow (simulated batches, honestly
-          // labelled; real photo-library access is a phase-2 item).
-          // A live-site check found no add control on repeat Library
-          // visits, so this action is unconditional: it is never
-          // gated on library state, filters, or first-run state.
+          // is the designed capture flow. A live-site check found no
+          // add control on repeat Library visits, so this action is
+          // unconditional: it is never gated on library state,
+          // filters, or first-run state.
           actions: <Widget>[
             TextButton.icon(
-              onPressed: () =>
-                  Navigator.of(context).pushNamed(Routes.import),
+              onPressed: () => Navigator.of(context).pushNamed(Routes.import),
               icon: const Icon(Icons.add_photo_alternate_outlined, size: 20),
               label: const Text('Add photos & videos'),
             ),
