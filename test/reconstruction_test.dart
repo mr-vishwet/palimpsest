@@ -102,6 +102,18 @@ void main() {
       expect(moment.title, 'Zxqvkj');
     });
 
+    test('a question of only stopwords returns an empty moment', () {
+      // 'what', 'was' and 'that' are all stopwords, so the question
+      // carries no searchable words. The index answers an empty
+      // token list with the whole library (right for library
+      // browsing), but a reconstruction must match nothing — the
+      // moment screen's 'Nothing matched' state, not the entire
+      // library flagged as looking wrong.
+      final moment = Reconstructor.reconstruct('what was that', data);
+      expect(moment.itemIds, isEmpty);
+      expect(moment.flaggedIds, isEmpty);
+    });
+
     test('titleFor tidies questions into moment titles', () {
       expect(
         Reconstructor.titleFor('Show me the last day of the cruise'),

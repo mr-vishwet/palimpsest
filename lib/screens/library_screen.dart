@@ -167,6 +167,22 @@ class _LibraryScreenState extends State<LibraryScreen> {
         return ResponsiveScaffold(
           title: 'Library',
           tabIndex: 2,
+          // The capture entry point: always visible, on every visit.
+          // There is no separate capture screen in v0.1 — adding
+          // photos and videos goes through the Import screen, which
+          // is the designed capture flow (simulated batches, honestly
+          // labelled; real photo-library access is a phase-2 item).
+          // A live-site check found no add control on repeat Library
+          // visits, so this action is unconditional: it is never
+          // gated on library state, filters, or first-run state.
+          actions: <Widget>[
+            TextButton.icon(
+              onPressed: () =>
+                  Navigator.of(context).pushNamed(Routes.import),
+              icon: const Icon(Icons.add_photo_alternate_outlined, size: 20),
+              label: const Text('Add photos & videos'),
+            ),
+          ],
           mobile: body,
           wide: body,
         );

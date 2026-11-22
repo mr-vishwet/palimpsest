@@ -28,6 +28,17 @@ class ArchiveStore {
       return ArchiveData.fromJson(json);
     } on FormatException {
       return null;
+    } on TypeError {
+      // Syntactically valid JSON with the wrong shape (a stale or
+      // corrupted document): the `as` casts in fromJson throw
+      // TypeError, and main() awaits load() before the first frame,
+      // so an uncaught throw here is a blank screen with no
+      // recovery. Reseed instead, as the doc comment promises.
+      return null;
+    } on ArgumentError {
+      // Same: an unknown enum name (e.g. ImportStatus.byName) in a
+      // stale document must reseed, not crash the launch.
+      return null;
     }
   }
 

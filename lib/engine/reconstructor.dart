@@ -65,6 +65,14 @@ abstract final class Reconstructor {
             ),
           )
           .toList(growable: false);
+    } else if (normalized.isEmpty) {
+      // A question of only stopwords ("what was that") carries no
+      // searchable words. The index answers an empty token list with
+      // the whole library — right for library browsing, wrong here:
+      // a reconstruction must match nothing, so the moment screen
+      // shows its 'Nothing matched' state instead of the entire
+      // library flagged as looking wrong.
+      hits = const <SearchHit>[];
     } else {
       hits = index.search(query);
     }
