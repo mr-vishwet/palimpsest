@@ -6,6 +6,8 @@
 /// The import pipeline itself is proven under dart2js by
 /// `import_pipeline_test.dart` (Chrome 12/12); the loader is a thin
 /// wrapper over it, and the real proof is the live site's first run.
+library;
+
 import 'dart:io';
 
 import 'package:crypto/crypto.dart';
